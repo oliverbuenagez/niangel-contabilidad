@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control de Ingredientes - Panadería</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       PANTALLA 1: LOGIN
+       Se muestra primero. Pide el PIN para acceder.
+       Cuando el usuario ingresa el PIN correcto, se oculta esta
+       pantalla y se muestra la pantalla principal.
+       ============================================================ -->
+  <div id="login-screen">
+    <div class="login-box">
+      <h1>🥖 Control de Ingredientes</h1>
+      <p class="login-subtitle">Panadería</p>
+      <p class="login-desc">Ingresa el PIN para acceder</p>
+      <input
+        type="password"
+        id="pin-input"
+        placeholder="PIN"
+        maxlength="4"
+        autocomplete="off"
+      />
+      <button onclick="verificarPin()" class="btn-primary">Ingresar</button>
+      <p class="login-hint">PIN: 1285</p>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PANTALLA 2: APLICACIÓN PRINCIPAL
+       Se oculta inicialmente (clase "hidden").
+       Contiene el formulario y la tabla de ingredientes.
+       ============================================================ -->
+  <div id="app-screen" class="hidden">
+
+    <!-- ENCABEZADO -->
+    <header>
+      <h1>🥖 Ingredientes</h1>
+      <button onclick="cerrarSesion()" class="btn-logout">Cerrar sesión</button>
+    </header>
+
+    <main>
+
+      <!-- ============================================================
+           SECCIÓN 1: FORMULARIO
+           Sirve para AGREGAR un ingrediente nuevo o EDITAR uno existente.
+           Cuando estamos editando, el formulario se auto-rellena con
+           los datos del ingrediente y el botón "Cancelar" aparece.
+           ============================================================ -->
+      <section id="form-section">
+        <h2 id="form-titulo">Agregar ingrediente</h2>
+        <form id="ingredientes-form">
+          <div class="form-group">
+            <label for="nombre-input">Nombre del ingrediente</label>
+            <input
+              type="text"
+              id="nombre-input"
+              placeholder="Ej: Harina de trigo"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="precio-input">Precio ($)</label>
+            <input
+              type="number"
+              id="precio-input"
+              placeholder="Ej: 2.50"
+              step="0.01"
+              min="0"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="unidad-select">Unidad de medida</label>
+              <select id="unidad-select">
+                <option value="g">Gramo (g)</option>
+                <option value="kg" selected>Kilogramo (kg)</option>
+                <option value="cc">Centímetro cúbico (cc)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="cantidad-input">Cantidad</label>
+              <input
+                type="number"
+                id="cantidad-input"
+                placeholder="Ej: 1"
+                step="0.1"
+                min="0"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-buttons">
+            <button type="submit" id="guardar-btn" class="btn-primary">
+              Guardar
+            </button>
+            <button
+              type="button"
+              id="cancelar-btn"
+              class="btn-secondary hidden"
+            >
+              Cancelar edición
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ============================================================
+           SECCIÓN 2: TABLA DE INGREDIENTES
+           Muestra todos los ingredientes guardados en Firebase.
+           Cada fila tiene botones para Editar y Eliminar.
+           La tabla se llena automáticamente con JavaScript.
+           ============================================================ -->
+      <section id="list-section">
+        <h2>Lista de ingredientes</h2>
+        <div class="table-container">
+          <table id="ingredientes-tabla">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Unidad</th>
+                <th>Cantidad</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="ingredientes-lista">
+              <!-- Las filas las genera JavaScript automáticamente -->
+            </tbody>
+          </table>
+        </div>
+        <p id="sin-ingredientes" class="empty-msg">
+          No hay ingredientes. ¡Agrega el primero!
+        </p>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ============================================================
+       SCRIPTS (JavaScript)
+       El orden es IMPORTANTE:
+       1. Firebase SDK (debe cargar primero)
+       2. firebase-config.js (nuestra configuración)
+       3. app.js (nuestra lógica)
+       ============================================================ -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
