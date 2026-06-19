@@ -655,7 +655,6 @@ function agregarFilaIngrediente(datos) {
         <option value="lb" ${unidadVal === 'lb' ? 'selected' : ''}>lb</option>
         <option value="kg" ${unidadVal === 'kg' ? 'selected' : ''}>kg</option>
         <option value="cc" ${unidadVal === 'cc' ? 'selected' : ''}>cc</option>
-        <option value="ml" ${unidadVal === 'ml' ? 'selected' : ''}>ml</option>
         <option value="u" ${unidadVal === 'u' ? 'selected' : ''}>u</option>
       </select>
     </div>
