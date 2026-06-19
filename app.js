@@ -930,7 +930,7 @@ function renderRecetas() {
     if (costoAdicional > 0) {
       ingredientesHtml += `
         <tr style="border-top:2px solid #e5e7eb;font-weight:600">
-          <td>Costo adicional</td>
+          <td>Gasto</td>
           <td></td>
           <td>$${costoAdicional.toFixed(2)}</td>
         </tr>
