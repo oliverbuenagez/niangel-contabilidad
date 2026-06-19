@@ -356,6 +356,12 @@ function calcularPrecios(precio, cantidad, unidad) {
     case 'u':
       gramos = cantidad;
       break;
+    case 'val':
+      return {
+        porGramo: "$" + precio.toFixed(0),
+        porLibra: "$" + precio.toFixed(0),
+        porKilo: "$" + precio.toFixed(0)
+      };
   }
 
   if (gramos === 0) {
@@ -390,6 +396,13 @@ function configurarEventos() {
   // Escuchar clic en Cancelar
   document.getElementById("cancelar-btn").addEventListener("click", function() {
     cancelarEdicion();
+  });
+
+  // Cuando se selecciona "Valor ($)" auto-pone cantidad 1
+  document.getElementById("unidad-select").addEventListener("change", function() {
+    if (this.value === "val") {
+      document.getElementById("cantidad-input").value = 1;
+    }
   });
 
   // Delegación de eventos en la tabla
@@ -630,6 +643,7 @@ function agregarFilaIngrediente(datos) {
 
   let optionsHtml = '<option value="">Seleccionar...</option>';
   ingredientesData.forEach(function(ing) {
+    if (ing.unidad === "val") return;
     const selected = (datos && datos.ingredienteId === ing.id) ? "selected" : "";
     optionsHtml += '<option value="' + ing.id + '" ' + selected + '>' + ing.nombre + '</option>';
   });
@@ -720,6 +734,9 @@ function actualizarCostosReceta() {
     total += costo;
   });
 
+  const adicional = parseFloat(document.getElementById("receta-costo-adicional").value) || 0;
+  total += adicional;
+
   document.getElementById("receta-total-costo").textContent = "$" + total.toFixed(2);
 }
 
@@ -736,7 +753,7 @@ function actualizarCostosReceta() {
 
 function calcularCostoIngrediente(ingredienteId, cantidad, unidad) {
   const base = ingredientesData.find(function(i) { return i.id === ingredienteId; });
-  if (!base) return 0;
+  if (!base || base.unidad === "val") return 0;
 
   let gramosUsados = 0;
   switch (unidad) {
@@ -825,9 +842,12 @@ function guardarReceta(evento) {
     return;
   }
 
+  const costoAdicional = parseFloat(document.getElementById("receta-costo-adicional").value) || 0;
+
   const receta = {
     nombre: nombre,
     ingredientes: ingredientes,
+    costoAdicional: costoAdicional,
     fecha: new Date().toISOString()
   };
 
@@ -846,6 +866,7 @@ function guardarReceta(evento) {
   document.getElementById("receta-form").reset();
   document.getElementById("receta-ingredientes-container").innerHTML = '<p class="empty-receta-msg">Agrega ingredientes a la receta</p>';
   document.getElementById("receta-total-costo").textContent = "$0.00";
+  document.getElementById("receta-costo-adicional").value = "";
   document.getElementById("cancelar-editar-receta-btn").classList.add("hidden");
   document.querySelector("#receta-form-section h2").textContent = "Nueva receta";
   recetaEditandoId = null;
@@ -881,9 +902,10 @@ function renderRecetas() {
   container.innerHTML = "";
 
   ordenadas.forEach(function(receta) {
+    const costoAdicional = receta.costoAdicional || 0;
     const total = receta.ingredientes.reduce(function(sum, ing) {
       return sum + (ing.costo || 0);
-    }, 0);
+    }, 0) + costoAdicional;
 
     const fecha = receta.fecha
       ? new Date(receta.fecha).toLocaleDateString("es-ES", { day: "numeric", month: "short" })
@@ -899,6 +921,16 @@ function renderRecetas() {
         </tr>
       `;
     });
+
+    if (costoAdicional > 0) {
+      ingredientesHtml += `
+        <tr style="border-top:2px solid #e5e7eb;font-weight:600">
+          <td>Costo adicional</td>
+          <td></td>
+          <td>$${costoAdicional.toFixed(2)}</td>
+        </tr>
+      `;
+    }
 
     const card = document.createElement("div");
     card.className = "receta-card";
@@ -949,6 +981,7 @@ function cancelarEditarReceta() {
   document.getElementById("receta-form").reset();
   document.getElementById("receta-ingredientes-container").innerHTML = '<p class="empty-receta-msg">Agrega ingredientes a la receta</p>';
   document.getElementById("receta-total-costo").textContent = "$0.00";
+  document.getElementById("receta-costo-adicional").value = "";
   document.getElementById("cancelar-editar-receta-btn").classList.add("hidden");
   document.querySelector("#receta-form-section h2").textContent = "Nueva receta";
 }
@@ -985,6 +1018,11 @@ function editarReceta(id) {
   // Cambiar título y mostrar botón cancelar
   document.querySelector("#receta-form-section h2").textContent = "Editar receta";
   document.getElementById("cancelar-editar-receta-btn").classList.remove("hidden");
+
+  // Rellenar costo adicional
+  if (receta.costoAdicional) {
+    document.getElementById("receta-costo-adicional").value = receta.costoAdicional;
+  }
 
   // Agregar filas de ingredientes
   receta.ingredientes.forEach(function(ing) {

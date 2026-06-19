@@ -478,7 +478,8 @@ td.unidad-col {
 }
 
 .unidad-tag.cc,
-.unidad-tag.u {
+.unidad-tag.u,
+.unidad-tag.val {
   background-color: #f3e8ff;
   color: #6b21a8;
 }

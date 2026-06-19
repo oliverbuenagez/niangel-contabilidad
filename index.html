@@ -96,6 +96,7 @@
                 <option value="kg">Kilogramo (kg)</option>
                 <option value="cc">Centímetro cúbico (cc)</option>
                 <option value="u">Unidad (u)</option>
+                <option value="val">Valor ($)</option>
               </select>
             </div>
             <div class="form-group">
@@ -214,6 +215,18 @@
           <button type="button" id="agregar-ingrediente-btn" class="btn-secondary btn-agregar-ingr">
             + Agregar ingrediente
           </button>
+
+          <div class="form-group">
+            <label for="receta-costo-adicional">Costo adicional ($)</label>
+            <input
+              type="number"
+              id="receta-costo-adicional"
+              placeholder="Ej: 100"
+              step="0.01"
+              min="0"
+              oninput="actualizarCostosReceta()"
+            />
+          </div>
 
           <div id="receta-total-box" class="receta-total">
             <span>Total receta:</span>
