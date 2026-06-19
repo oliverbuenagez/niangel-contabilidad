@@ -470,6 +470,11 @@ function configurarEventos() {
     actualizarCostosReceta();
   });
 
+  // Costo adicional
+  document.getElementById("receta-costo-adicional").addEventListener("input", function() {
+    actualizarCostosReceta();
+  });
+
   document.getElementById("receta-ingredientes-container").addEventListener("click", function(e) {
     if (e.target.classList.contains("btn-quitar-ingr")) {
       e.target.closest(".receta-ingr-row").remove();
