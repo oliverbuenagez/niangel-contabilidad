@@ -19,6 +19,7 @@
 let db = null;
 let ingredientesRef = null;
 let editandoId = null;
+let ingredientesData = [];
 
 // ============================================================
 // PARTE 2: LOGIN (NO necesita Firebase)
@@ -148,46 +149,125 @@ function configurarListener() {
   ingredientesRef.onSnapshot(function(snapshot) {
     if (sessionStorage.getItem("autenticado") !== "true") return;
 
-    const lista = document.getElementById("ingredientes-lista");
-    const emptyMsg = document.getElementById("sin-ingredientes");
-
-    lista.innerHTML = "";
-
-    if (snapshot.empty) {
-      emptyMsg.classList.remove("hidden");
-      return;
-    }
-    emptyMsg.classList.add("hidden");
+    ingredientesData = [];
 
     snapshot.forEach(function(doc) {
-      const datos = doc.data();
-      const precios = calcularPrecios(
-        Number(datos.precio),
-        Number(datos.cantidad),
-        datos.unidad
-      );
-
-      const fila = document.createElement("tr");
-
-      fila.innerHTML = `
-        <td>${datos.nombre}</td>
-        <td>$${Number(datos.precio).toFixed(0)}</td>
-        <td>${datos.unidad}</td>
-        <td>${datos.cantidad}</td>
-        <td><strong>${precios.porGramo}</strong></td>
-        <td><strong>${precios.porLibra}</strong></td>
-        <td><strong>${precios.porKilo}</strong></td>
-        <td class="acciones">
-          <button class="btn-editar" data-id="${doc.id}">Editar</button>
-          <button class="btn-eliminar" data-id="${doc.id}">Eliminar</button>
-        </td>
-      `;
-
-      lista.appendChild(fila);
+      ingredientesData.push({
+        id: doc.id,
+        nombre: doc.data().nombre,
+        precio: Number(doc.data().precio),
+        unidad: doc.data().unidad,
+        cantidad: Number(doc.data().cantidad),
+        fecha: doc.data().fecha || null
+      });
     });
+
+    renderTabla();
   }, function(error) {
     mostrarError("Error de conexión con Firebase: " + error.message);
   });
+}
+
+// ============================================================
+// FUNCIÓN: renderTabla()
+//
+// ¿Qué hace?
+//   Toma los datos de ingredientesData, aplica el filtro de
+//   búsqueda y el ordenamiento seleccionado, y dibuja la tabla.
+//   Se llama cada vez que cambia el filtro, el orden, o llegan
+//   datos nuevos de Firebase.
+// ============================================================
+
+function renderTabla() {
+  const lista = document.getElementById("ingredientes-lista");
+  const emptyMsg = document.getElementById("sin-ingredientes");
+
+  let datos = [...ingredientesData];
+
+  // 1. FILTRAR por nombre
+  const textoBusqueda = document.getElementById("filtro-buscar").value.trim().toLowerCase();
+  if (textoBusqueda) {
+    datos = datos.filter(function(item) {
+      return item.nombre.toLowerCase().includes(textoBusqueda);
+    });
+  }
+
+  // 2. ORDENAR según la opción seleccionada
+  const orden = document.getElementById("filtro-orden").value;
+
+  datos.sort(function(a, b) {
+    switch (orden) {
+      case "nombre-asc":
+        return a.nombre.localeCompare(b.nombre);
+      case "nombre-desc":
+        return b.nombre.localeCompare(a.nombre);
+      case "precio-asc":
+        return a.precio - b.precio;
+      case "precio-desc":
+        return b.precio - a.precio;
+      case "fecha-asc":
+        if (!a.fecha && !b.fecha) return 0;
+        if (!a.fecha) return 1;
+        if (!b.fecha) return -1;
+        return a.fecha.localeCompare(b.fecha);
+      case "fecha-desc":
+        if (!a.fecha && !b.fecha) return 0;
+        if (!a.fecha) return 1;
+        if (!b.fecha) return -1;
+        return b.fecha.localeCompare(a.fecha);
+      default:
+        return 0;
+    }
+  });
+
+  // 3. RENDERIZAR la tabla
+  lista.innerHTML = "";
+
+  if (datos.length === 0) {
+    emptyMsg.classList.remove("hidden");
+    if (textoBusqueda) {
+      emptyMsg.textContent = 'No se encontraron ingredientes con "' + textoBusqueda + '"';
+    } else {
+      emptyMsg.textContent = "No hay ingredientes. ¡Agrega el primero!";
+    }
+    return;
+  }
+  emptyMsg.classList.add("hidden");
+
+  datos.forEach(function(item) {
+    const precios = calcularPrecios(item.precio, item.cantidad, item.unidad);
+
+    const fila = document.createElement("tr");
+
+    fila.innerHTML = `
+      <td>${item.nombre}</td>
+      <td>$${item.precio.toFixed(0)}</td>
+      <td>${item.unidad}</td>
+      <td>${item.cantidad}</td>
+      <td><strong>${precios.porGramo}</strong></td>
+      <td><strong>${precios.porLibra}</strong></td>
+      <td><strong>${precios.porKilo}</strong></td>
+      <td class="acciones">
+        <button class="btn-editar" data-id="${item.id}">Editar</button>
+        <button class="btn-eliminar" data-id="${item.id}">Eliminar</button>
+      </td>
+    `;
+
+    lista.appendChild(fila);
+  });
+}
+
+// ============================================================
+// FUNCIÓN: aplicarFiltros()
+//
+// ¿Qué hace?
+//   Se llama desde los onChange/onInput del HTML cuando el
+//   usuario escribe en el buscador o cambia el orden.
+//   Simplemente vuelve a renderizar con los filtros actuales.
+// ============================================================
+
+function aplicarFiltros() {
+  renderTabla();
 }
 
 // ============================================================
@@ -322,7 +402,8 @@ function guardarIngrediente(evento) {
     nombre: nombre,
     precio: precio,
     unidad: unidad,
-    cantidad: cantidad
+    cantidad: cantidad,
+    fecha: new Date().toISOString()
   };
 
   if (editandoId) {

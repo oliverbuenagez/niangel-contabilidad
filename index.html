@@ -130,6 +130,30 @@
            ============================================================ -->
       <section id="list-section">
         <h2>Lista de ingredientes</h2>
+
+        <!-- BARRA DE FILTROS -->
+        <div class="filtros-bar">
+          <div class="filtro-buscar">
+            <input
+              type="text"
+              id="filtro-buscar"
+              placeholder="🔍 Buscar ingrediente..."
+              oninput="aplicarFiltros()"
+            />
+          </div>
+          <div class="filtro-ordenar">
+            <label for="filtro-orden">Ordenar:</label>
+            <select id="filtro-orden" onchange="aplicarFiltros()">
+              <option value="fecha-desc">Más reciente</option>
+              <option value="fecha-asc">Más antiguo</option>
+              <option value="nombre-asc">Nombre A-Z</option>
+              <option value="nombre-desc">Nombre Z-A</option>
+              <option value="precio-asc">Precio $ - $$</option>
+              <option value="precio-desc" selected>Precio $$ - $</option>
+            </select>
+          </div>
+        </div>
+
         <div class="table-container">
           <table id="ingredientes-tabla">
             <thead>

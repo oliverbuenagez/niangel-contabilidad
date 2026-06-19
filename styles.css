@@ -208,7 +208,7 @@ main {
 }
 
 /* =============================================================
-   7. FORMULARIO
+   8. FORMULARIO
    Estilos para el formulario de agregar/editar ingredientes.
    ============================================================= */
 
@@ -276,7 +276,7 @@ main {
 }
 
 /* =============================================================
-   8. TABLA DE INGREDIENTES
+   9. TABLA DE INGREDIENTES
    Muestra los ingredientes en formato de filas y columnas.
    ============================================================= */
 
@@ -372,7 +372,79 @@ tbody td:nth-child(7) {
 }
 
 /* =============================================================
-   9. MENSAJE CUANDO NO HAY INGREDIENTES
+   9. BARRA DE FILTROS
+   ============================================================= */
+
+.filtros-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.filtro-buscar {
+  flex: 1;
+}
+
+.filtro-buscar input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.filtro-buscar input:focus {
+  border-color: #d97706;
+}
+
+.filtro-ordenar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.filtro-ordenar label {
+  font-size: 0.85rem;
+  color: #374151;
+  font-weight: 600;
+}
+
+.filtro-ordenar select {
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  outline: none;
+  background-color: #fafafa;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.filtro-ordenar select:focus {
+  border-color: #d97706;
+}
+
+@media (max-width: 600px) {
+  .filtros-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .filtro-ordenar {
+    width: 100%;
+  }
+
+  .filtro-ordenar select {
+    flex: 1;
+  }
+}
+
+/* =============================================================
+   10. MENSAJE CUANDO NO HAY INGREDIENTES
    ============================================================= */
 
 .empty-msg {
@@ -383,7 +455,7 @@ tbody td:nth-child(7) {
 }
 
 /* =============================================================
-   10. RESPONSIVE: MÓVILES
+   11. RESPONSIVE: MÓVILES
    Cuando la pantalla es angosta (menos de 600px),
    ajustamos los elementos para que se vean bien.
    ============================================================= */
