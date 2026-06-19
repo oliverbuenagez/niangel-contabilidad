@@ -193,6 +193,7 @@ function configurarListenerRecetas() {
         id: doc.id,
         nombre: data.nombre,
         ingredientes: data.ingredientes || [],
+        costoAdicional: data.costoAdicional || 0,
         fecha: data.fecha || null
       });
     });
