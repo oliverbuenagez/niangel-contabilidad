@@ -303,6 +303,13 @@ tbody tr:last-child td {
   border-bottom: none;
 }
 
+/* Columnas numéricas alineadas a la derecha */
+tbody td:nth-child(2),
+tbody td:nth-child(5) {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+}
+
 /* Botones dentro de la tabla */
 .btn-editar,
 .btn-eliminar {

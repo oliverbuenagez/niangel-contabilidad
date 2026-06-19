@@ -114,11 +114,15 @@ ingredientesRef.onSnapshot(function(snapshot) {
 
     // Rellenar la fila con los datos del ingrediente
     // template literal (``) permite insertar variables con ${}
+    const precioUnidad = Number(datos.precio) / Number(datos.cantidad);
+    const precioUnidadFormateado = precioUnidad.toFixed(2);
+
     fila.innerHTML = `
       <td>${datos.nombre}</td>
-      <td>$${Number(datos.precio).toFixed(2)}</td>
+      <td>$${Number(datos.precio).toFixed(0)}</td>
       <td>${datos.unidad}</td>
       <td>${datos.cantidad}</td>
+      <td><strong>$${precioUnidadFormateado} / ${datos.unidad}</strong></td>
       <td class="acciones">
         <button class="btn-editar" data-id="${doc.id}">Editar</button>
         <button class="btn-eliminar" data-id="${doc.id}">Eliminar</button>
