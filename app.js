@@ -474,6 +474,9 @@ function configurarEventos() {
   document.getElementById("receta-costo-adicional").addEventListener("input", function() {
     actualizarCostosReceta();
   });
+  document.getElementById("receta-costo-adicional").addEventListener("change", function() {
+    actualizarCostosReceta();
+  });
 
   document.getElementById("receta-ingredientes-container").addEventListener("click", function(e) {
     if (e.target.classList.contains("btn-quitar-ingr")) {
