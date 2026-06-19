@@ -130,7 +130,10 @@ ingredientesRef.onSnapshot(function(snapshot) {
     `;
 
     // Agregar la fila a la tabla
-    lista.appendChild(fila);
+      lista.appendChild(fila);
+    });
+  }, function(error) {
+    mostrarError("Error de conexión con Firebase: " + error.message + ". ¿Creaste Firestore Database?");
   });
 });
 
@@ -302,14 +305,18 @@ function guardarIngrediente(evento) {
     // MODO EDICIÓN: actualizar un documento existente
     // .doc(editandoId) selecciona el documento por su ID
     // .update(ingrediente) MODIFICA solo los campos que pasamos
-    ingredientesRef.doc(editandoId).update(ingrediente);
+    ingredientesRef.doc(editandoId).update(ingrediente).catch(function(error) {
+      mostrarError("Error al actualizar: " + error.message);
+    });
     editandoId = null;
     document.getElementById("form-titulo").textContent = "Agregar ingrediente";
   } else {
     // MODO AGREGAR: crear un documento nuevo
     // .add(ingrediente) CREA un nuevo documento en Firebase
     // Firebase le asigna automáticamente un ID único
-    ingredientesRef.add(ingrediente);
+    ingredientesRef.add(ingrediente).catch(function(error) {
+      mostrarError("Error al guardar: " + error.message);
+    });
   }
 
   // Limpiar el formulario y ocultar botón de cancelar
@@ -360,7 +367,9 @@ function editarIngrediente(id, datos) {
 
 function eliminarIngrediente(id) {
   if (confirm("¿Estás seguro de eliminar este ingrediente?")) {
-    ingredientesRef.doc(id).delete();
+    ingredientesRef.doc(id).delete().catch(function(error) {
+      mostrarError("Error al eliminar: " + error.message);
+    });
   }
 }
 
@@ -397,4 +406,22 @@ function cerrarSesion() {
   document.getElementById("app-screen").classList.add("hidden");
 
   document.getElementById("pin-input").value = "";
+}
+
+// ============================================================
+// FUNCIÓN: mostrarError(mensaje)
+//
+// ¿Qué hace?
+//   Muestra un mensaje de error visible en la parte superior
+//   de la pantalla, para que sepas qué falló sin tener que
+//   abrir la consola del navegador.
+// ============================================================
+
+function mostrarError(mensaje) {
+  document.getElementById("error-text").textContent = mensaje;
+  document.getElementById("error-bar").classList.remove("hidden");
+}
+
+function cerrarError() {
+  document.getElementById("error-bar").classList.add("hidden");
 }

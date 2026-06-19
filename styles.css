@@ -173,7 +173,31 @@ header h1 {
 }
 
 /* =============================================================
-   6. CONTENEDOR PRINCIPAL
+   6. BARRA DE ERROR
+   ============================================================= */
+
+.error-bar {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  border-bottom: 2px solid #fecaca;
+}
+
+.error-close {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #dc2626;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+/* =============================================================
+   7. CONTENEDOR PRINCIPAL
    Área donde están el formulario y la tabla.
    ============================================================= */
 
