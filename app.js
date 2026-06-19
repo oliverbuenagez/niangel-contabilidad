@@ -146,7 +146,6 @@ function inicializarFirebase() {
 
 function configurarListener() {
   ingredientesRef.onSnapshot(function(snapshot) {
-    // Solo actualizar si estamos autenticados
     if (sessionStorage.getItem("autenticado") !== "true") return;
 
     const lista = document.getElementById("ingredientes-lista");
@@ -162,9 +161,11 @@ function configurarListener() {
 
     snapshot.forEach(function(doc) {
       const datos = doc.data();
-
-      const precioUnidad = Number(datos.precio) / Number(datos.cantidad);
-      const precioUnidadFormateado = precioUnidad.toFixed(2);
+      const precios = calcularPrecios(
+        Number(datos.precio),
+        Number(datos.cantidad),
+        datos.unidad
+      );
 
       const fila = document.createElement("tr");
 
@@ -173,7 +174,9 @@ function configurarListener() {
         <td>$${Number(datos.precio).toFixed(0)}</td>
         <td>${datos.unidad}</td>
         <td>${datos.cantidad}</td>
-        <td><strong>$${precioUnidadFormateado} / ${datos.unidad}</strong></td>
+        <td><strong>${precios.porGramo}</strong></td>
+        <td><strong>${precios.porLibra}</strong></td>
+        <td><strong>${precios.porKilo}</strong></td>
         <td class="acciones">
           <button class="btn-editar" data-id="${doc.id}">Editar</button>
           <button class="btn-eliminar" data-id="${doc.id}">Eliminar</button>
@@ -185,6 +188,58 @@ function configurarListener() {
   }, function(error) {
     mostrarError("Error de conexión con Firebase: " + error.message);
   });
+}
+
+// ============================================================
+// FUNCIÓN: calcularPrecios(precio, cantidad, unidad)
+//
+// ¿Qué hace?
+//   Convierte el precio total a precio por gramo, libra y kilo
+//   sin importar la unidad en la que se compró.
+//
+//   Fórmulas:
+//     g  → precio ÷ cantidad
+//     lb → precio ÷ (cantidad × 500)
+//     kg → precio ÷ (cantidad × 1000)
+//     cc → precio ÷ cantidad  (no hay conversión de peso)
+//
+//   Luego calcula:
+//     $/g  = precio / gramos
+//     $/lb = precio / (gramos / 500)
+//     $/kg = precio / (gramos / 1000)
+// ============================================================
+
+function calcularPrecios(precio, cantidad, unidad) {
+  let gramos = 0;
+
+  switch (unidad) {
+    case 'g':
+      gramos = cantidad;
+      break;
+    case 'lb':
+      gramos = cantidad * 500;
+      break;
+    case 'kg':
+      gramos = cantidad * 1000;
+      break;
+    case 'cc':
+      gramos = cantidad;
+      break;
+  }
+
+  if (gramos === 0) {
+    return {
+      porGramo: "$0.00",
+      porLibra: "$0.00",
+      porKilo: "$0.00"
+    };
+  }
+
+  return {
+    porGramo: "$" + (precio / gramos).toFixed(2),
+    porLibra: "$" + (precio / (gramos / 500)).toFixed(2),
+    porKilo: "$" + (precio / (gramos / 1000)).toFixed(2)
+  };
 }
 
 // ============================================================
