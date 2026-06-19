@@ -353,6 +353,7 @@ function calcularPrecios(precio, cantidad, unidad) {
       break;
     case 'cc':
     case 'ml':
+    case 'u':
       gramos = cantidad;
       break;
   }
@@ -653,6 +654,9 @@ function agregarFilaIngrediente(datos) {
         <option value="g" ${unidadVal === 'g' ? 'selected' : ''}>g</option>
         <option value="lb" ${unidadVal === 'lb' ? 'selected' : ''}>lb</option>
         <option value="kg" ${unidadVal === 'kg' ? 'selected' : ''}>kg</option>
+        <option value="cc" ${unidadVal === 'cc' ? 'selected' : ''}>cc</option>
+        <option value="ml" ${unidadVal === 'ml' ? 'selected' : ''}>ml</option>
+        <option value="u" ${unidadVal === 'u' ? 'selected' : ''}>u</option>
       </select>
     </div>
     <div class="receta-ingr-costo">$0.00</div>
@@ -740,6 +744,9 @@ function calcularCostoIngrediente(ingredienteId, cantidad, unidad) {
     case 'g': gramosUsados = cantidad; break;
     case 'lb': gramosUsados = cantidad * 500; break;
     case 'kg': gramosUsados = cantidad * 1000; break;
+    case 'cc':
+    case 'ml':
+    case 'u': gramosUsados = cantidad; break;
   }
 
   let gramosBase = 0;
@@ -748,7 +755,8 @@ function calcularCostoIngrediente(ingredienteId, cantidad, unidad) {
     case 'lb': gramosBase = base.cantidad * 500; break;
     case 'kg': gramosBase = base.cantidad * 1000; break;
     case 'cc':
-    case 'ml': gramosBase = base.cantidad; break;
+    case 'ml':
+    case 'u': gramosBase = base.cantidad; break;
   }
 
   if (gramosBase === 0 || gramosUsados === 0) return 0;
