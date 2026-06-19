@@ -145,16 +145,61 @@ body {
 header {
   background: linear-gradient(135deg, #d97706, #b45309);
   color: white;
-  padding: 16px 24px;
+  padding: 12px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 header h1 {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 700;
+}
+
+/* TABS */
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.tab {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.tab:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.tab.active {
+  background: white;
+  color: #b45309;
+  border-color: white;
+}
+
+/* TAB PANELS */
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
 }
 
 .btn-logout {
@@ -224,6 +269,14 @@ main {
   font-size: 1.2rem;
   margin-bottom: 20px;
   color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#form-section h2::before {
+  content: "✏️";
+  font-size: 1.1rem;
 }
 
 .form-group {
@@ -277,12 +330,11 @@ main {
 
 /* =============================================================
    9. TABLA DE INGREDIENTES
-   Muestra los ingredientes en formato de filas y columnas.
    ============================================================= */
 
 #list-section {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 24px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
@@ -291,10 +343,19 @@ main {
   font-size: 1.2rem;
   margin-bottom: 16px;
   color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#list-section h2::before {
+  content: "📋";
 }
 
 .table-container {
   overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
 }
 
 table {
@@ -304,48 +365,141 @@ table {
 }
 
 thead th {
-  background-color: #f3f4f6;
-  color: #374151;
+  background: linear-gradient(135deg, #d97706, #b45309);
+  color: white;
   font-weight: 600;
   text-align: left;
-  padding: 12px 14px;
-  border-bottom: 2px solid #e5e7eb;
+  padding: 14px 14px;
   white-space: nowrap;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+thead th:nth-child(3),
+thead th:nth-child(4) {
+  text-align: center;
+}
+
+thead th:last-child {
+  text-align: center;
+}
+
+thead th:first-child {
+  border-radius: 12px 0 0 0;
+}
+
+thead th:last-child {
+  border-radius: 0 12px 0 0;
 }
 
 tbody td {
-  padding: 12px 14px;
+  padding: 14px;
   border-bottom: 1px solid #f3f4f6;
   vertical-align: middle;
+  transition: background-color 0.2s;
+}
+
+tbody tr {
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #faf8f5;
 }
 
 tbody tr:hover {
-  background-color: #fefce8;
+  background-color: #fef3c7;
 }
 
 tbody tr:last-child td {
   border-bottom: none;
 }
 
-/* Columnas numéricas alineadas a la derecha */
-tbody td:nth-child(2),
-tbody td:nth-child(5),
-tbody td:nth-child(6),
-tbody td:nth-child(7) {
+@keyframes fadeInRow {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+tbody tr {
+  animation: fadeInRow 0.3s ease forwards;
+}
+
+/* Columnas numéricas */
+tbody td.precio-col,
+tbody td.precio-unitario {
   text-align: right;
   font-family: 'Courier New', monospace;
+  font-weight: 600;
+}
+
+/* Nombre del ingrediente con estilo */
+.nombre-ingrediente {
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+/* Columna de unidad */
+td.unidad-col {
+  text-align: center;
+  font-weight: 500;
+}
+
+.unidad-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.unidad-tag.g {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.unidad-tag.lb {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.unidad-tag.kg {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.unidad-tag.cc,
+.unidad-tag.ml {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+}
+
+/* Cantidad con estilo */
+.cantidad-num {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #1a1a2e;
 }
 
 /* Botones dentro de la tabla */
 .btn-editar,
 .btn-eliminar {
-  padding: 6px 12px;
-  font-size: 0.8rem;
+  padding: 6px 14px;
+  font-size: 0.78rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s;
-  margin-right: 4px;
+  transition: all 0.2s;
+  font-weight: 600;
 }
 
 .btn-editar {
@@ -354,25 +508,334 @@ tbody td:nth-child(7) {
 }
 
 .btn-editar:hover {
-  background-color: #bfdbfe;
+  background-color: #1d4ed8;
+  color: white;
+  transform: scale(1.05);
 }
 
 .btn-eliminar {
   background-color: #fee2e2;
   color: #dc2626;
+  margin-left: 4px;
 }
 
 .btn-eliminar:hover {
-  background-color: #fecaca;
+  background-color: #dc2626;
+  color: white;
+  transform: scale(1.05);
 }
 
 /* Columna de acciones */
 .acciones {
   white-space: nowrap;
+  text-align: center;
 }
 
 /* =============================================================
-   9. BARRA DE FILTROS
+   9B. SECCIÓN RECETAS
+   ============================================================= */
+
+#receta-form-section {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+}
+
+#receta-form-section h2 {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#receta-form-section h2::before {
+  content: "📝";
+}
+
+/* Fila de ingrediente en la receta */
+.receta-ingr-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  margin-bottom: 10px;
+  padding: 12px;
+  background: #faf8f5;
+  border-radius: 10px;
+  border: 1px solid #f0f0f0;
+  flex-wrap: wrap;
+}
+
+.receta-ingr-row .form-group {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 80px;
+}
+
+.receta-ingr-row .form-group select,
+.receta-ingr-row .form-group input {
+  padding: 10px 10px;
+  font-size: 0.85rem;
+}
+
+.receta-ingr-row .form-group label {
+  font-size: 0.75rem;
+  margin-bottom: 4px;
+}
+
+.receta-ingr-costo {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #059669;
+  white-space: nowrap;
+  min-width: 70px;
+  justify-content: flex-end;
+  padding: 8px 0;
+}
+
+.btn-quitar-ingr {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-quitar-ingr:hover {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-agregar-ingr {
+  margin-top: 4px;
+  margin-bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.empty-receta-msg {
+  text-align: center;
+  color: #9ca3af;
+  padding: 20px;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* Total receta */
+.receta-total {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.receta-total strong {
+  font-size: 1.4rem;
+  color: #1a1a2e;
+}
+
+/* Lista de recetas */
+#receta-list-section {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+#receta-list-section h2 {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#receta-list-section h2::before {
+  content: "📖";
+}
+
+.receta-card {
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.receta-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.receta-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+  background: #faf8f5;
+  transition: background 0.2s;
+}
+
+.receta-card-header:hover {
+  background: #fef3c7;
+}
+
+.receta-card-header .receta-nombre {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #1a1a2e;
+}
+
+.receta-card-header .receta-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.receta-card-header .receta-costo {
+  font-weight: 800;
+  color: #059669;
+  font-family: 'Courier New', monospace;
+}
+
+.receta-card-header .receta-fecha {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.receta-card-body {
+  display: none;
+  padding: 12px 16px 16px;
+  border-top: 1px solid #f0f0f0;
+  background: white;
+}
+
+.receta-card-body.open {
+  display: block;
+}
+
+.receta-ingredientes-list {
+  width: 100%;
+  font-size: 0.85rem;
+}
+
+.receta-ingredientes-list th {
+  text-align: left;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #9ca3af;
+  padding: 4px 8px;
+  font-weight: 600;
+}
+
+.receta-ingredientes-list td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.receta-ingredientes-list td:last-child {
+  text-align: right;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+}
+
+.receta-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.receta-card-actions .btn-eliminar {
+  margin-left: 0;
+}
+
+/* =============================================================
+   9C. BARRA DE RESUMEN
+   ============================================================= */
+
+.resumen-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.resumen-card {
+  flex: 1;
+  min-width: 120px;
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.resumen-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.resumen-card .resumen-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9ca3af;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.resumen-card .resumen-valor {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #1a1a2e;
+}
+
+.resumen-card .resumen-valor.precio-bajo {
+  color: #059669;
+}
+
+.resumen-card .resumen-valor.precio-alto {
+  color: #dc2626;
+}
+
+.resumen-card .resumen-sub {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+#resumen-total {
+  border-left: 4px solid #d97706;
+}
+
+/* =============================================================
+   10. BARRA DE FILTROS
    ============================================================= */
 
 .filtros-bar {
@@ -462,11 +925,38 @@ tbody td:nth-child(7) {
 
 @media (max-width: 600px) {
   header {
-    padding: 12px 16px;
+    padding: 10px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .header-left {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
   }
 
   header h1 {
-    font-size: 1.1rem;
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .tabs {
+    justify-content: center;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    font-size: 0.8rem;
+    padding: 6px 8px;
+  }
+
+  .btn-logout {
+    align-self: flex-end;
+    font-size: 0.75rem;
+    padding: 6px 12px;
   }
 
   main {
@@ -474,7 +964,9 @@ tbody td:nth-child(7) {
   }
 
   #form-section,
-  #list-section {
+  #list-section,
+  #receta-form-section,
+  #receta-list-section {
     padding: 16px;
   }
 
@@ -487,13 +979,56 @@ tbody td:nth-child(7) {
     flex-direction: column;
   }
 
+  .resumen-bar {
+    flex-wrap: wrap;
+  }
+
+  .resumen-card {
+    min-width: calc(50% - 6px);
+    flex: none;
+    padding: 12px;
+  }
+
+  .resumen-card .resumen-valor {
+    font-size: 1.1rem;
+  }
+
   table {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
 
   thead th,
   tbody td {
-    padding: 8px 10px;
+    padding: 8px 6px;
+  }
+
+  .receta-ingr-row {
+    flex-wrap: wrap;
+  }
+
+  .receta-ingr-row .form-group {
+    min-width: calc(50% - 20px);
+    flex: 1;
+  }
+
+  .receta-ingr-row .form-group:first-child {
+    min-width: 100%;
+  }
+
+  .receta-ingr-costo {
+    min-width: auto;
+    padding: 4px 0;
+  }
+
+  .receta-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .receta-card-header .receta-info {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .login-box {

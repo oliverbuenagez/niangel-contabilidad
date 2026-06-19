@@ -20,6 +20,9 @@ let db = null;
 let ingredientesRef = null;
 let editandoId = null;
 let ingredientesData = [];
+let recetasRef = null;
+let recetasData = [];
+let recetaEditandoId = null;
 
 // ============================================================
 // PARTE 2: LOGIN (NO necesita Firebase)
@@ -122,11 +125,13 @@ function inicializarFirebase() {
     // firebase.firestore() devuelve el objeto para manejar la BD
     db = firebase.firestore();
 
-    // Apuntamos a la colección "ingredientes"
+    // Apuntamos a las colecciones
     ingredientesRef = db.collection("ingredientes");
+    recetasRef = db.collection("recetas");
 
     // Si llegamos aquí, Firebase funciona. Configuramos todo.
     configurarListener();
+    configurarListenerRecetas();
     configurarEventos();
     cerrarError();
 
@@ -165,6 +170,36 @@ function configurarListener() {
     renderTabla();
   }, function(error) {
     mostrarError("Error de conexión con Firebase: " + error.message);
+  });
+}
+
+// ============================================================
+// FUNCIÓN: configurarListenerRecetas()
+//
+// ¿Qué hace?
+//   Escucha cambios en la colección "recetas" y actualiza la
+//   lista de recetas en tiempo real.
+// ============================================================
+
+function configurarListenerRecetas() {
+  recetasRef.onSnapshot(function(snapshot) {
+    if (sessionStorage.getItem("autenticado") !== "true") return;
+
+    recetasData = [];
+
+    snapshot.forEach(function(doc) {
+      const data = doc.data();
+      recetasData.push({
+        id: doc.id,
+        nombre: data.nombre,
+        ingredientes: data.ingredientes || [],
+        fecha: data.fecha || null
+      });
+    });
+
+    renderRecetas();
+  }, function(error) {
+    mostrarError("Error al cargar recetas: " + error.message);
   });
 }
 
@@ -230,6 +265,7 @@ function renderTabla() {
     } else {
       emptyMsg.textContent = "No hay ingredientes. ¡Agrega el primero!";
     }
+    actualizarResumen([]);
     return;
   }
   emptyMsg.classList.add("hidden");
@@ -240,13 +276,13 @@ function renderTabla() {
     const fila = document.createElement("tr");
 
     fila.innerHTML = `
-      <td>${item.nombre}</td>
-      <td>$${item.precio.toFixed(0)}</td>
-      <td>${item.unidad}</td>
-      <td>${item.cantidad}</td>
-      <td><strong>${precios.porGramo}</strong></td>
-      <td><strong>${precios.porLibra}</strong></td>
-      <td><strong>${precios.porKilo}</strong></td>
+      <td><span class="nombre-ingrediente">${item.nombre}</span></td>
+      <td class="precio-col">$${item.precio.toFixed(0)}</td>
+      <td class="unidad-col"><span class="unidad-tag ${item.unidad}">${item.unidad}</span></td>
+      <td style="text-align:center"><span class="cantidad-num">${item.cantidad}</span></td>
+      <td class="precio-unitario">${precios.porGramo}</td>
+      <td class="precio-unitario">${precios.porLibra}</td>
+      <td class="precio-unitario">${precios.porKilo}</td>
       <td class="acciones">
         <button class="btn-editar" data-id="${item.id}">Editar</button>
         <button class="btn-eliminar" data-id="${item.id}">Eliminar</button>
@@ -255,6 +291,8 @@ function renderTabla() {
 
     lista.appendChild(fila);
   });
+
+  actualizarResumen(datos);
 }
 
 // ============================================================
@@ -268,6 +306,17 @@ function renderTabla() {
 
 function aplicarFiltros() {
   renderTabla();
+}
+
+// ============================================================
+// FUNCIÓN: actualizarResumen(datos)
+//
+// ¿Qué hace?
+//   Muestra el total de ingredientes en la lista.
+// ============================================================
+
+function actualizarResumen(datos) {
+  document.getElementById("resumen-total-valor").textContent = datos.length;
 }
 
 // ============================================================
@@ -362,6 +411,80 @@ function configurarEventos() {
 
     } else if (btn.classList.contains("btn-eliminar")) {
       eliminarIngrediente(id);
+    }
+  });
+
+  // ============================================================
+  // EVENTOS DE PESTAÑAS
+  // ============================================================
+
+  document.querySelectorAll(".tab").forEach(function(tab) {
+    tab.addEventListener("click", function() {
+      document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });
+      document.querySelectorAll(".tab-panel").forEach(function(p) { p.classList.remove("active"); });
+
+      tab.classList.add("active");
+      document.getElementById("seccion-" + tab.dataset.tab).classList.add("active");
+    });
+  });
+
+  // ============================================================
+  // EVENTOS DE RECETAS
+  // ============================================================
+
+  // Botón "Agregar ingrediente" en el formulario de receta
+  document.getElementById("agregar-ingrediente-btn").addEventListener("click", function() {
+    agregarFilaIngrediente();
+  });
+
+  // Guardar receta
+  document.getElementById("receta-form").addEventListener("submit", function(e) {
+    guardarReceta(e);
+  });
+
+  // Cancelar edición de receta
+  document.getElementById("cancelar-editar-receta-btn").addEventListener("click", function() {
+    cancelarEditarReceta();
+  });
+
+  // Delegación de eventos en los ingredientes de receta (cambios, quitar)
+  document.getElementById("receta-ingredientes-container").addEventListener("change", function() {
+    actualizarCostosReceta();
+  });
+
+  document.getElementById("receta-ingredientes-container").addEventListener("input", function() {
+    actualizarCostosReceta();
+  });
+
+  document.getElementById("receta-ingredientes-container").addEventListener("click", function(e) {
+    if (e.target.classList.contains("btn-quitar-ingr")) {
+      e.target.closest(".receta-ingr-row").remove();
+      actualizarCostosReceta();
+      mostrarMsgRecetaVacia();
+    }
+  });
+
+  // Delegación de eventos en la lista de recetas
+  document.getElementById("recetas-container").addEventListener("click", function(e) {
+    const header = e.target.closest(".receta-card-header");
+    if (header) {
+      const body = header.nextElementSibling;
+      if (body) {
+        body.classList.toggle("open");
+      }
+      return;
+    }
+
+    const btn = e.target.closest("button");
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    if (!id) return;
+
+    if (btn.classList.contains("btn-editar")) {
+      editarReceta(id);
+    } else if (btn.classList.contains("btn-eliminar")) {
+      eliminarReceta(id);
     }
   });
 }
@@ -476,6 +599,416 @@ function cancelarEdicion() {
   document.getElementById("ingredientes-form").reset();
   document.getElementById("cancelar-btn").classList.add("hidden");
   document.getElementById("form-titulo").textContent = "Agregar ingrediente";
+}
+
+// ============================================================
+// PARTE 5: RECETAS
+// ============================================================
+
+// ============================================================
+// FUNCIÓN: agregarFilaIngrediente(datos)
+//
+// ¿Qué hace?
+//   Agrega una fila de ingrediente en el formulario de receta.
+//   Si datos tiene valores, rellena los campos (para editar).
+// ============================================================
+
+function agregarFilaIngrediente(datos) {
+  const container = document.getElementById("receta-ingredientes-container");
+  const emptyMsg = container.querySelector(".empty-receta-msg");
+  if (emptyMsg) emptyMsg.remove();
+
+  const index = Date.now();
+
+  const row = document.createElement("div");
+  row.className = "receta-ingr-row";
+
+  const selectId = "receta-ingr-select-" + index;
+  const cantidadId = "receta-ingr-cantidad-" + index;
+  const unidadId = "receta-ingr-unidad-" + index;
+
+  let optionsHtml = '<option value="">Seleccionar...</option>';
+  ingredientesData.forEach(function(ing) {
+    const selected = (datos && datos.ingredienteId === ing.id) ? "selected" : "";
+    optionsHtml += '<option value="' + ing.id + '" ' + selected + '>' + ing.nombre + '</option>';
+  });
+
+  const cantidadVal = datos ? datos.cantidad : "";
+  const unidadVal = datos ? datos.unidad : "g";
+
+  row.innerHTML = `
+    <div class="form-group" style="flex:2;min-width:120px">
+      <label for="${selectId}">Ingrediente</label>
+      <select id="${selectId}" class="receta-ingr-select">
+        ${optionsHtml}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="${cantidadId}">Cantidad</label>
+      <input type="number" id="${cantidadId}" class="receta-ingr-cantidad" value="${cantidadVal}" step="0.1" min="0" placeholder="0" />
+    </div>
+    <div class="form-group">
+      <label for="${unidadId}">Unidad</label>
+      <select id="${unidadId}" class="receta-ingr-unidad">
+        <option value="g" ${unidadVal === 'g' ? 'selected' : ''}>g</option>
+        <option value="lb" ${unidadVal === 'lb' ? 'selected' : ''}>lb</option>
+        <option value="kg" ${unidadVal === 'kg' ? 'selected' : ''}>kg</option>
+      </select>
+    </div>
+    <div class="receta-ingr-costo">$0.00</div>
+    <button type="button" class="btn-quitar-ingr" title="Quitar">✕</button>
+  `;
+
+  container.appendChild(row);
+
+  if (datos) {
+    setTimeout(function() {
+      actualizarCostosReceta();
+    }, 50);
+  }
+}
+
+// ============================================================
+// FUNCIÓN: mostrarMsgRecetaVacia()
+//
+// ¿Qué hace?
+//   Muestra el mensaje de vacío si no hay filas de ingredientes.
+// ============================================================
+
+function mostrarMsgRecetaVacia() {
+  const container = document.getElementById("receta-ingredientes-container");
+  if (container.children.length === 0) {
+    container.innerHTML = '<p class="empty-receta-msg">Agrega ingredientes a la receta</p>';
+    document.getElementById("receta-total-costo").textContent = "$0.00";
+  }
+}
+
+// ============================================================
+// FUNCIÓN: actualizarCostosReceta()
+//
+// ¿Qué hace?
+//   Recorre todas las filas de ingredientes y calcula el costo
+//   de cada una. Luego actualiza el total de la receta.
+// ============================================================
+
+function actualizarCostosReceta() {
+  const rows = document.querySelectorAll("#receta-ingredientes-container .receta-ingr-row");
+  let total = 0;
+
+  rows.forEach(function(row) {
+    const select = row.querySelector(".receta-ingr-select");
+    const cantidadInput = row.querySelector(".receta-ingr-cantidad");
+    const unidadSelect = row.querySelector(".receta-ingr-unidad");
+    const costoSpan = row.querySelector(".receta-ingr-costo");
+
+    if (!select || !cantidadInput || !unidadSelect || !costoSpan) return;
+
+    const ingredienteId = select.value;
+    const cantidad = parseFloat(cantidadInput.value);
+    const unidad = unidadSelect.value;
+
+    if (!ingredienteId || isNaN(cantidad) || cantidad <= 0) {
+      costoSpan.textContent = "$0.00";
+      return;
+    }
+
+    const costo = calcularCostoIngrediente(ingredienteId, cantidad, unidad);
+    costoSpan.textContent = "$" + costo.toFixed(2);
+    total += costo;
+  });
+
+  document.getElementById("receta-total-costo").textContent = "$" + total.toFixed(2);
+}
+
+// ============================================================
+// FUNCIÓN: calcularCostoIngrediente(ingredienteId, cantidad, unidad)
+//
+// ¿Qué hace?
+//   Calcula cuánto cuesta usar X cantidad de un ingrediente
+//   en una receta, basado en el precio original del ingrediente.
+//
+//   Fórmula:
+//     costo = (precioIngrediente / gramosComprados) * gramosUsados
+// ============================================================
+
+function calcularCostoIngrediente(ingredienteId, cantidad, unidad) {
+  const base = ingredientesData.find(function(i) { return i.id === ingredienteId; });
+  if (!base) return 0;
+
+  let gramosUsados = 0;
+  switch (unidad) {
+    case 'g': gramosUsados = cantidad; break;
+    case 'lb': gramosUsados = cantidad * 500; break;
+    case 'kg': gramosUsados = cantidad * 1000; break;
+  }
+
+  let gramosBase = 0;
+  switch (base.unidad) {
+    case 'g': gramosBase = base.cantidad; break;
+    case 'lb': gramosBase = base.cantidad * 500; break;
+    case 'kg': gramosBase = base.cantidad * 1000; break;
+    case 'cc':
+    case 'ml': gramosBase = base.cantidad; break;
+  }
+
+  if (gramosBase === 0 || gramosUsados === 0) return 0;
+
+  return (base.precio / gramosBase) * gramosUsados;
+}
+
+// ============================================================
+// FUNCIÓN: guardarReceta(evento)
+//
+// ¿Qué hace?
+//   Guarda o actualiza una receta en Firebase.
+// ============================================================
+
+function guardarReceta(evento) {
+  evento.preventDefault();
+
+  if (!recetasRef) {
+    mostrarError("Firebase no está conectado.");
+    return;
+  }
+
+  const nombre = document.getElementById("receta-nombre-input").value.trim();
+  if (!nombre) {
+    alert("El nombre de la receta es obligatorio.");
+    return;
+  }
+
+  const rows = document.querySelectorAll("#receta-ingredientes-container .receta-ingr-row");
+  if (rows.length === 0) {
+    alert("Agrega al menos un ingrediente a la receta.");
+    return;
+  }
+
+  const ingredientes = [];
+  let algunValido = false;
+
+  rows.forEach(function(row, idx) {
+    const select = row.querySelector(".receta-ingr-select");
+    const cantidadInput = row.querySelector(".receta-ingr-cantidad");
+    const unidadSelect = row.querySelector(".receta-ingr-unidad");
+
+    const ingredienteId = select.value;
+    const cantidad = parseFloat(cantidadInput.value);
+    const unidad = unidadSelect.value;
+
+    if (!ingredienteId || isNaN(cantidad) || cantidad <= 0) return;
+
+    const base = ingredientesData.find(function(i) { return i.id === ingredienteId; });
+    if (!base) return;
+
+    const costo = calcularCostoIngrediente(ingredienteId, cantidad, unidad);
+
+    ingredientes.push({
+      ingredienteId: ingredienteId,
+      nombre: base.nombre,
+      cantidad: cantidad,
+      unidad: unidad,
+      costo: costo
+    });
+
+    algunValido = true;
+  });
+
+  if (!algunValido) {
+    alert("Completa todos los ingredientes con valores válidos.");
+    return;
+  }
+
+  const receta = {
+    nombre: nombre,
+    ingredientes: ingredientes,
+    fecha: new Date().toISOString()
+  };
+
+  if (recetaEditandoId) {
+    recetasRef.doc(recetaEditandoId).update(receta).catch(function(error) {
+      mostrarError("Error al actualizar receta: " + error.message);
+    });
+    recetaEditandoId = null;
+  } else {
+    recetasRef.add(receta).catch(function(error) {
+      mostrarError("Error al guardar receta: " + error.message);
+    });
+  }
+
+  // Limpiar formulario
+  document.getElementById("receta-form").reset();
+  document.getElementById("receta-ingredientes-container").innerHTML = '<p class="empty-receta-msg">Agrega ingredientes a la receta</p>';
+  document.getElementById("receta-total-costo").textContent = "$0.00";
+  document.getElementById("cancelar-editar-receta-btn").classList.add("hidden");
+  document.querySelector("#receta-form-section h2").textContent = "Nueva receta";
+  recetaEditandoId = null;
+}
+
+// ============================================================
+// FUNCIÓN: renderRecetas()
+//
+// ¿Qué hace?
+//   Muestra la lista de recetas guardadas con sus costos.
+//   Cada receta se expande para ver sus ingredientes.
+// ============================================================
+
+function renderRecetas() {
+  const container = document.getElementById("recetas-container");
+  const emptyMsg = document.getElementById("sin-recetas");
+
+  if (recetasData.length === 0) {
+    container.innerHTML = "";
+    emptyMsg.classList.remove("hidden");
+    return;
+  }
+  emptyMsg.classList.add("hidden");
+
+  // Ordenar por fecha descendente
+  const ordenadas = [...recetasData].sort(function(a, b) {
+    if (!a.fecha && !b.fecha) return 0;
+    if (!a.fecha) return 1;
+    if (!b.fecha) return -1;
+    return b.fecha.localeCompare(a.fecha);
+  });
+
+  container.innerHTML = "";
+
+  ordenadas.forEach(function(receta) {
+    const total = receta.ingredientes.reduce(function(sum, ing) {
+      return sum + (ing.costo || 0);
+    }, 0);
+
+    const fecha = receta.fecha
+      ? new Date(receta.fecha).toLocaleDateString("es-ES", { day: "numeric", month: "short" })
+      : "";
+
+    let ingredientesHtml = "";
+    receta.ingredientes.forEach(function(ing) {
+      ingredientesHtml += `
+        <tr>
+          <td>${ing.nombre}</td>
+          <td>${ing.cantidad} ${ing.unidad}</td>
+          <td>$${ing.costo.toFixed(2)}</td>
+        </tr>
+      `;
+    });
+
+    const card = document.createElement("div");
+    card.className = "receta-card";
+    card.innerHTML = `
+      <div class="receta-card-header">
+        <div>
+          <div class="receta-nombre">${receta.nombre}</div>
+          <div class="receta-fecha">${fecha}</div>
+        </div>
+        <div class="receta-info">
+          <span class="receta-costo">$${total.toFixed(2)}</span>
+          <span style="font-size:0.8rem;color:#9ca3af">▼</span>
+        </div>
+      </div>
+      <div class="receta-card-body">
+        <table class="receta-ingredientes-list">
+          <thead>
+            <tr>
+              <th>Ingrediente</th>
+              <th>Cantidad</th>
+              <th>Costo</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${ingredientesHtml}
+          </tbody>
+        </table>
+        <div class="receta-card-actions">
+          <button class="btn-editar" data-id="${receta.id}">Editar</button>
+          <button class="btn-eliminar" data-id="${receta.id}">Eliminar</button>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+// ============================================================
+// FUNCIÓN: cancelarEditarReceta()
+//
+// ¿Qué hace?
+//   Cancela la edición de receta y vuelve al estado inicial.
+// ============================================================
+
+function cancelarEditarReceta() {
+  recetaEditandoId = null;
+  document.getElementById("receta-form").reset();
+  document.getElementById("receta-ingredientes-container").innerHTML = '<p class="empty-receta-msg">Agrega ingredientes a la receta</p>';
+  document.getElementById("receta-total-costo").textContent = "$0.00";
+  document.getElementById("cancelar-editar-receta-btn").classList.add("hidden");
+  document.querySelector("#receta-form-section h2").textContent = "Nueva receta";
+}
+
+// ============================================================
+// FUNCIÓN: editarReceta(id)
+//
+// ¿Qué hace?
+//   Carga los datos de una receta en el formulario para editarla.
+// ============================================================
+
+function editarReceta(id) {
+  const receta = recetasData.find(function(r) { return r.id === id; });
+  if (!receta) {
+    mostrarError("Receta no encontrada.");
+    return;
+  }
+
+  recetaEditandoId = id;
+
+  // Cambiar a pestaña Recetas
+  document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });
+  document.querySelectorAll(".tab-panel").forEach(function(p) { p.classList.remove("active"); });
+  document.querySelector('.tab[data-tab="recetas"]').classList.add("active");
+  document.getElementById("seccion-recetas").classList.add("active");
+
+  // Limpiar el formulario
+  document.getElementById("receta-form").reset();
+  document.getElementById("receta-ingredientes-container").innerHTML = "";
+
+  // Rellenar nombre
+  document.getElementById("receta-nombre-input").value = receta.nombre;
+
+  // Cambiar título y mostrar botón cancelar
+  document.querySelector("#receta-form-section h2").textContent = "Editar receta";
+  document.getElementById("cancelar-editar-receta-btn").classList.remove("hidden");
+
+  // Agregar filas de ingredientes
+  receta.ingredientes.forEach(function(ing) {
+    agregarFilaIngrediente({
+      ingredienteId: ing.ingredienteId,
+      cantidad: ing.cantidad,
+      unidad: ing.unidad
+    });
+  });
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ============================================================
+// FUNCIÓN: eliminarReceta(id)
+//
+// ¿Qué hace?
+//   Elimina una receta de Firebase previa confirmación.
+// ============================================================
+
+function eliminarReceta(id) {
+  if (!recetasRef) {
+    mostrarError("Firebase no está conectado.");
+    return;
+  }
+
+  if (confirm("¿Estás seguro de eliminar esta receta?")) {
+    recetasRef.doc(id).delete().catch(function(error) {
+      mostrarError("Error al eliminar receta: " + error.message);
+    });
+  }
 }
 
 // ============================================================

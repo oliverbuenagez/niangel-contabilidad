@@ -40,7 +40,13 @@
 
     <!-- ENCABEZADO -->
     <header>
-      <h1>🥖 Ingredientes</h1>
+      <div class="header-left">
+        <h1>🥖 Panadería</h1>
+        <nav class="tabs">
+          <button class="tab active" data-tab="ingredientes">Ingredientes</button>
+          <button class="tab" data-tab="recetas">Recetas</button>
+        </nav>
+      </div>
       <button onclick="cerrarSesion()" class="btn-logout">Cerrar sesión</button>
     </header>
 
@@ -50,13 +56,11 @@
       <button onclick="cerrarError()" class="error-close">×</button>
     </div>
 
+    <div id="seccion-ingredientes" class="tab-panel active">
     <main>
 
       <!-- ============================================================
            SECCIÓN 1: FORMULARIO
-           Sirve para AGREGAR un ingrediente nuevo o EDITAR uno existente.
-           Cuando estamos editando, el formulario se auto-rellena con
-           los datos del ingrediente y el botón "Cancelar" aparece.
            ============================================================ -->
       <section id="form-section">
         <h2 id="form-titulo">Agregar ingrediente</h2>
@@ -124,14 +128,18 @@
 
       <!-- ============================================================
            SECCIÓN 2: TABLA DE INGREDIENTES
-           Muestra todos los ingredientes guardados en Firebase.
-           Cada fila tiene botones para Editar y Eliminar.
-           La tabla se llena automáticamente con JavaScript.
            ============================================================ -->
       <section id="list-section">
         <h2>Lista de ingredientes</h2>
 
-        <!-- BARRA DE FILTROS -->
+        <div class="resumen-bar">
+          <div class="resumen-card" id="resumen-total">
+            <div class="resumen-label">Total</div>
+            <div class="resumen-valor" id="resumen-total-valor">0</div>
+            <div class="resumen-sub">ingredientes</div>
+          </div>
+        </div>
+
         <div class="filtros-bar">
           <div class="filtro-buscar">
             <input
@@ -169,7 +177,6 @@
               </tr>
             </thead>
             <tbody id="ingredientes-lista">
-              <!-- Las filas las genera JavaScript automáticamente -->
             </tbody>
           </table>
         </div>
@@ -179,6 +186,58 @@
       </section>
 
     </main>
+    </div>
+
+    <!-- ============================================================
+         SECCIÓN 3: RECETAS
+         ============================================================ -->
+    <div id="seccion-recetas" class="tab-panel">
+    <main>
+
+      <section id="receta-form-section">
+        <h2>Nueva receta</h2>
+        <form id="receta-form">
+          <div class="form-group">
+            <label for="receta-nombre-input">Nombre de la receta</label>
+            <input
+              type="text"
+              id="receta-nombre-input"
+              placeholder="Ej: Pan de molde"
+              required
+            />
+          </div>
+
+          <div id="receta-ingredientes-container">
+            <p class="empty-receta-msg">Agrega ingredientes a la receta</p>
+          </div>
+
+          <button type="button" id="agregar-ingrediente-btn" class="btn-secondary btn-agregar-ingr">
+            + Agregar ingrediente
+          </button>
+
+          <div id="receta-total-box" class="receta-total">
+            <span>Total receta:</span>
+            <strong id="receta-total-costo">$0.00</strong>
+          </div>
+
+          <div class="form-buttons">
+            <button type="submit" class="btn-primary">Guardar receta</button>
+            <button type="button" id="cancelar-editar-receta-btn" class="btn-secondary hidden">Cancelar edición</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="receta-list-section">
+        <h2>Mis recetas</h2>
+        <div id="recetas-container">
+        </div>
+        <p id="sin-recetas" class="empty-msg">
+          No hay recetas. ¡Crea la primera!
+        </p>
+      </section>
+
+    </main>
+    </div>
   </div>
 
   <!-- ============================================================
