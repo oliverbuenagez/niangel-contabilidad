@@ -223,6 +223,7 @@ function calcularPrecios(precio, cantidad, unidad) {
       gramos = cantidad * 1000;
       break;
     case 'cc':
+    case 'ml':
       gramos = cantidad;
       break;
   }
