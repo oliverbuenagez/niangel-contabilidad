@@ -8,85 +8,52 @@
 </head>
 <body>
 
-  <!-- ============================================================
-       PANTALLA 1: LOGIN
-       Se muestra primero. Pide el PIN para acceder.
-       Cuando el usuario ingresa el PIN correcto, se oculta esta
-       pantalla y se muestra la pantalla principal.
-       ============================================================ -->
   <div id="login-screen">
     <div class="login-box">
       <h1>🥖 Control de Ingredientes</h1>
       <p class="login-subtitle">Panadería</p>
       <p class="login-desc">Ingresa el PIN para acceder</p>
-      <input
-        type="password"
-        id="pin-input"
-        placeholder="PIN"
-        maxlength="4"
-        autocomplete="off"
-      />
+      <input type="password" id="pin-input" placeholder="PIN" maxlength="4" autocomplete="off" />
       <button onclick="verificarPin()" class="btn-primary">Ingresar</button>
       <p class="login-hint">PIN: 1285</p>
     </div>
   </div>
 
-  <!-- ============================================================
-       PANTALLA 2: APLICACIÓN PRINCIPAL
-       Se oculta inicialmente (clase "hidden").
-       Contiene el formulario y la tabla de ingredientes.
-       ============================================================ -->
   <div id="app-screen" class="hidden">
 
-    <!-- ENCABEZADO -->
     <header>
       <div class="header-left">
         <h1>🥖 Panadería</h1>
         <nav class="tabs">
           <button class="tab active" data-tab="ingredientes">Ingredientes</button>
           <button class="tab" data-tab="recetas">Recetas</button>
+          <button class="tab" data-tab="produccion">Producción</button>
+          <button class="tab" data-tab="historial">Historial</button>
         </nav>
       </div>
       <button onclick="cerrarSesion()" class="btn-logout">Cerrar sesión</button>
     </header>
 
-    <!-- MENSAJE DE ERROR/CONEXIÓN -->
     <div id="error-bar" class="hidden error-bar">
       <span id="error-text"></span>
       <button onclick="cerrarError()" class="error-close">×</button>
     </div>
 
+    <!-- ===== INGREDIENTES ===== -->
     <div id="seccion-ingredientes" class="tab-panel active">
     <main>
 
-      <!-- ============================================================
-           SECCIÓN 1: FORMULARIO
-           ============================================================ -->
       <section id="form-section">
         <h2 id="form-titulo">Agregar ingrediente</h2>
         <form id="ingredientes-form">
           <div class="form-group">
             <label for="nombre-input">Nombre del ingrediente</label>
-            <input
-              type="text"
-              id="nombre-input"
-              placeholder="Ej: Harina de trigo"
-              required
-            />
+            <input type="text" id="nombre-input" placeholder="Ej: Harina de trigo" required />
           </div>
-
           <div class="form-group">
             <label for="precio-input">Precio ($)</label>
-            <input
-              type="number"
-              id="precio-input"
-              placeholder="Ej: 2.50"
-              step="0.01"
-              min="0"
-              required
-            />
+            <input type="number" id="precio-input" placeholder="Ej: 2.50" step="0.01" min="0" required />
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label for="unidad-select">Unidad de medida</label>
@@ -101,38 +68,18 @@
             </div>
             <div class="form-group">
               <label for="cantidad-input">Cantidad</label>
-              <input
-                type="number"
-                id="cantidad-input"
-                placeholder="Ej: 1"
-                step="0.1"
-                min="0"
-                required
-              />
+              <input type="number" id="cantidad-input" placeholder="Ej: 1" step="0.1" min="0" required />
             </div>
           </div>
-
           <div class="form-buttons">
-            <button type="submit" id="guardar-btn" class="btn-primary">
-              Guardar
-            </button>
-            <button
-              type="button"
-              id="cancelar-btn"
-              class="btn-secondary hidden"
-            >
-              Cancelar edición
-            </button>
+            <button type="submit" id="guardar-btn" class="btn-primary">Guardar</button>
+            <button type="button" id="cancelar-btn" class="btn-secondary hidden">Cancelar edición</button>
           </div>
         </form>
       </section>
 
-      <!-- ============================================================
-           SECCIÓN 2: TABLA DE INGREDIENTES
-           ============================================================ -->
       <section id="list-section">
         <h2>Lista de ingredientes</h2>
-
         <div class="resumen-bar">
           <div class="resumen-card" id="resumen-total">
             <div class="resumen-label">Total</div>
@@ -140,15 +87,9 @@
             <div class="resumen-sub">ingredientes</div>
           </div>
         </div>
-
         <div class="filtros-bar">
           <div class="filtro-buscar">
-            <input
-              type="text"
-              id="filtro-buscar"
-              placeholder="🔍 Buscar ingrediente..."
-              oninput="aplicarFiltros()"
-            />
+            <input type="text" id="filtro-buscar" placeholder="🔍 Buscar ingrediente..." oninput="aplicarFiltros()" />
           </div>
           <div class="filtro-ordenar">
             <label for="filtro-orden">Ordenar:</label>
@@ -162,7 +103,6 @@
             </select>
           </div>
         </div>
-
         <div class="table-container">
           <table id="ingredientes-tabla">
             <thead>
@@ -177,21 +117,16 @@
                 <th>Acciones</th>
               </tr>
             </thead>
-            <tbody id="ingredientes-lista">
-            </tbody>
+            <tbody id="ingredientes-lista"></tbody>
           </table>
         </div>
-        <p id="sin-ingredientes" class="empty-msg">
-          No hay ingredientes. ¡Agrega el primero!
-        </p>
+        <p id="sin-ingredientes" class="empty-msg">No hay ingredientes. ¡Agrega el primero!</p>
       </section>
 
     </main>
     </div>
 
-    <!-- ============================================================
-         SECCIÓN 3: RECETAS
-         ============================================================ -->
+    <!-- ===== RECETAS ===== -->
     <div id="seccion-recetas" class="tab-panel">
     <main>
 
@@ -200,32 +135,29 @@
         <form id="receta-form">
           <div class="form-group">
             <label for="receta-nombre-input">Nombre de la receta</label>
-            <input
-              type="text"
-              id="receta-nombre-input"
-              placeholder="Ej: Pan de molde"
-              required
-            />
+            <input type="text" id="receta-nombre-input" placeholder="Ej: Pan de molde" required />
           </div>
 
           <div id="receta-ingredientes-container">
             <p class="empty-receta-msg">Agrega ingredientes a la receta</p>
           </div>
 
-          <button type="button" id="agregar-ingrediente-btn" class="btn-secondary btn-agregar-ingr">
-            + Agregar ingrediente
-          </button>
+          <button type="button" id="agregar-ingrediente-btn" class="btn-secondary btn-agregar-ingr">+ Agregar ingrediente</button>
 
           <div class="form-group">
             <label for="receta-costo-adicional">Costo adicional ($)</label>
-            <input
-              type="number"
-              id="receta-costo-adicional"
-              placeholder="Ej: 100"
-              step="0.01"
-              min="0"
+            <input type="number" id="receta-costo-adicional" placeholder="Ej: 100" step="0.01" min="0" />
+          </div>
 
-            />
+          <div class="form-row">
+            <div class="form-group">
+              <label for="receta-rinde">Rinde (panes por tanda)</label>
+              <input type="number" id="receta-rinde" placeholder="Ej: 15" min="1" step="1" />
+            </div>
+            <div class="form-group">
+              <label for="receta-precio-venta">Precio venta por pan ($)</label>
+              <input type="number" id="receta-precio-venta" placeholder="Ej: 300" step="0.01" min="0" />
+            </div>
           </div>
 
           <div id="receta-total-box" class="receta-total">
@@ -242,24 +174,169 @@
 
       <section id="receta-list-section">
         <h2>Mis recetas</h2>
-        <div id="recetas-container">
-        </div>
-        <p id="sin-recetas" class="empty-msg">
-          No hay recetas. ¡Crea la primera!
-        </p>
+        <div id="recetas-container"></div>
+        <p id="sin-recetas" class="empty-msg">No hay recetas. ¡Crea la primera!</p>
       </section>
 
     </main>
     </div>
+
+    <!-- ===== PRODUCCIÓN ===== -->
+    <div id="seccion-produccion" class="tab-panel">
+    <main>
+
+      <section id="produccion-form-section">
+        <h2>Nueva producción</h2>
+        <form id="produccion-form">
+
+          <div class="form-group">
+            <label for="produccion-receta-select">Receta</label>
+            <select id="produccion-receta-select">
+              <option value="">Seleccionar receta...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="produccion-cantidad">Cantidad a producir</label>
+            <div class="form-row" style="gap:8px">
+              <input type="number" id="produccion-cantidad" placeholder="Ej: 20" step="0.1" min="0" style="flex:1" />
+              <select id="produccion-unidad" style="width:auto;min-width:90px">
+                <option value="lb" selected>lb</option>
+                <option value="kg">kg</option>
+                <option value="g">g</option>
+                <option value="panes">panes</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="produccion-info" class="produccion-info hidden">
+            <div class="prod-info-row">
+              <span>Harina por tanda:</span>
+              <strong id="prod-peso-tanda">—</strong>
+              <span>→</span>
+              <strong id="prod-panes-tanda">—</strong>
+            </div>
+            <div class="prod-info-row">
+              <span>Producción:</span>
+              <strong id="prod-total-peso">—</strong>
+              <span>→</span>
+              <strong id="prod-total-panes">—</strong>
+            </div>
+            <div class="prod-info-row prod-info-mult">
+              <span>Multiplicador:</span>
+              <strong id="prod-multiplicador">—</strong>
+            </div>
+          </div>
+
+          <div id="produccion-ingredientes-container">
+            <p class="empty-prod-msg">Selecciona una receta para ver los ingredientes</p>
+          </div>
+
+          <div class="form-group">
+            <label for="produccion-costo-adicional">Costo adicional ($)</label>
+            <input type="number" id="produccion-costo-adicional" placeholder="Ej: 500" step="0.01" min="0" />
+          </div>
+
+          <div id="produccion-resumen" class="produccion-resumen hidden">
+            <div class="prod-res-row">
+              <span>Inversión ingredientes:</span>
+              <strong id="prod-costo-ingredientes">$0</strong>
+            </div>
+            <div class="prod-res-row">
+              <span>Costo adicional:</span>
+              <strong id="prod-costo-adicional-label">$0</strong>
+            </div>
+            <div class="prod-res-divider"></div>
+            <div class="prod-res-row prod-res-total">
+              <span>Costo total:</span>
+              <strong id="prod-costo-total">$0</strong>
+            </div>
+            <div class="prod-res-row prod-res-ingreso">
+              <span>Ingreso (<span id="prod-ingreso-panes">0</span> × $<span id="prod-precio-pan">0</span>):</span>
+              <strong id="prod-ingreso-total">$0</strong>
+            </div>
+            <div class="prod-res-divider"></div>
+            <div class="prod-res-row prod-res-ganancia">
+              <span>GANANCIA:</span>
+              <strong id="prod-ganancia">$0</strong>
+            </div>
+            <div class="prod-res-row">
+              <span>MARGEN:</span>
+              <strong id="prod-margen">0%</strong>
+            </div>
+          </div>
+
+          <div class="form-buttons">
+            <button type="submit" id="guardar-produccion-btn" class="btn-primary">Guardar producción</button>
+            <button type="button" id="cancelar-editar-produccion-btn" class="btn-secondary hidden">Cancelar edición</button>
+          </div>
+        </form>
+      </section>
+
+    </main>
+    </div>
+
+    <!-- ===== HISTORIAL ===== -->
+    <div id="seccion-historial" class="tab-panel">
+    <main>
+
+      <section id="historial-section">
+        <h2>📊 Historial de producción</h2>
+
+        <div class="historial-filtros">
+          <button class="historial-btn" data-period="today">Hoy</button>
+          <button class="historial-btn" data-period="week">Semana</button>
+          <button class="historial-btn" data-period="month">Mes</button>
+          <button class="historial-btn" data-period="year">Año</button>
+          <button class="historial-btn" data-period="all">Todo</button>
+        </div>
+
+        <div class="historial-resumen" id="historial-resumen">
+          <div class="hist-card">
+            <div class="hist-card-label">Producciones</div>
+            <div class="hist-card-valor" id="hist-count">0</div>
+          </div>
+          <div class="hist-card">
+            <div class="hist-card-label">Panes</div>
+            <div class="hist-card-valor" id="hist-panes">0</div>
+          </div>
+          <div class="hist-card">
+            <div class="hist-card-label">Costo</div>
+            <div class="hist-card-valor" id="hist-costo">$0</div>
+          </div>
+          <div class="hist-card">
+            <div class="hist-card-label">Ingreso</div>
+            <div class="hist-card-valor hist-verde" id="hist-ingreso">$0</div>
+          </div>
+          <div class="hist-card">
+            <div class="hist-card-label">Ganancia</div>
+            <div class="hist-card-valor hist-ganancia" id="hist-ganancia">$0</div>
+          </div>
+          <div class="hist-card">
+            <div class="hist-card-label">Margen</div>
+            <div class="hist-card-valor" id="hist-margen">0%</div>
+          </div>
+        </div>
+
+        <div id="historial-grafica-container">
+          <canvas id="historial-grafica"></canvas>
+        </div>
+
+        <div id="historial-paginacion" class="historial-paginacion"></div>
+
+        <div id="historial-tabla-container"></div>
+
+        <h3 style="margin-top:24px;font-size:1.1rem">Por receta</h3>
+        <div id="historial-por-receta"></div>
+
+        <p id="sin-historial" class="empty-msg">No hay producciones guardadas.</p>
+      </section>
+
+    </main>
+    </div>
+
   </div>
 
-  <!-- ============================================================
-       SCRIPTS (JavaScript)
-       El orden es IMPORTANTE:
-       1. Firebase SDK (debe cargar primero)
-       2. firebase-config.js (nuestra configuración)
-       3. app.js (nuestra lógica)
-       ============================================================ -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
