@@ -12,6 +12,12 @@ let produccionEditandoId = null;
 let historialOrden = { col: "fecha", dir: "desc" };
 let historialPagina = 1;
 let historialPorPagina = 50;
+let clientesRef = null;
+let clientesData = [];
+let clienteEditandoId = null;
+let ventasRef = null;
+let ventasData = [];
+let ventaEditandoId = null;
 
 // ============================================================
 // LOGIN
@@ -60,9 +66,13 @@ function inicializarFirebase() {
     ingredientesRef = db.collection("ingredientes");
     recetasRef = db.collection("recetas");
     produccionRef = db.collection("produccion");
+    clientesRef = db.collection("clientes");
+    ventasRef = db.collection("ventas");
     configurarListener();
     configurarListenerRecetas();
     configurarListenerProducciones();
+    configurarListenerClientes();
+    configurarListenerVentas();
     configurarEventos();
     cerrarError();
   } catch (error) {
@@ -283,6 +293,14 @@ function configurarEventos() {
       document.getElementById("seccion-" + tab.dataset.tab).classList.add("active");
       if (tab.dataset.tab === "produccion") llenarSelectReceta();
       if (tab.dataset.tab === "historial") actualizarHistorial();
+      if (tab.dataset.tab === "ventas") {
+        llenarSelectClienteVenta();
+        // Si no hay fecha, poner hoy
+        var fechaInput = document.getElementById("venta-fecha-input");
+        if (fechaInput && !fechaInput.value) {
+          fechaInput.value = new Date().toISOString().split("T")[0];
+        }
+      }
     });
   });
 
@@ -340,6 +358,13 @@ function configurarEventos() {
   document.getElementById("produccion-costo-adicional").addEventListener("change", function() { calcularProduccion(); });
   document.getElementById("produccion-form").addEventListener("submit", function(e) { guardarProduccion(e); });
   document.getElementById("cancelar-editar-produccion-btn").addEventListener("click", function() { cancelarEditarProduccion(); });
+
+  // VENTAS
+  document.getElementById("clientes-form").addEventListener("submit", function(e) { guardarCliente(e); });
+  document.getElementById("cancelar-editar-cliente-btn").addEventListener("click", function() { cancelarEditarCliente(); });
+  document.getElementById("ventas-form").addEventListener("submit", function(e) { guardarVenta(e); });
+  document.getElementById("cancelar-editar-venta-btn").addEventListener("click", function() { cancelarEditarVenta(); });
+  document.getElementById("agregar-item-venta-btn").addEventListener("click", function() { agregarItemVenta(); });
 }
 
 // ============================================================
@@ -1319,6 +1344,402 @@ function eliminarProduccion(id) {
     mostrarError("Error al eliminar producción: " + error.message);
   });
 }
+
+// ============================================================
+// VENTAS
+// ============================================================
+
+function configurarListenerClientes() {
+  clientesRef.orderBy("nombre", "asc").onSnapshot(function(snapshot) {
+    if (sessionStorage.getItem("autenticado") !== "true") return;
+    clientesData = [];
+    snapshot.forEach(function(doc) {
+      var d = doc.data();
+      clientesData.push({
+        id: doc.id,
+        nombre: d.nombre || "",
+        telefono: d.telefono || "",
+        direccion: d.direccion || "",
+        barrio: d.barrio || ""
+      });
+    });
+    renderClientes();
+    llenarSelectClienteVenta();
+  }, function(error) {
+    mostrarError("Error al cargar clientes: " + error.message);
+  });
+}
+
+function configurarListenerVentas() {
+  ventasRef.orderBy("fechaCreacion", "desc").onSnapshot(function(snapshot) {
+    if (sessionStorage.getItem("autenticado") !== "true") return;
+    ventasData = [];
+    snapshot.forEach(function(doc) {
+      var d = doc.data();
+      ventasData.push({
+        id: doc.id,
+        clienteId: d.clienteId || "",
+        clienteNombre: d.clienteNombre || "",
+        fecha: d.fecha || "",
+        items: d.items || [],
+        total: d.total || 0
+      });
+    });
+    renderVentas();
+  }, function(error) {
+    mostrarError("Error al cargar ventas: " + error.message);
+  });
+}
+
+function llenarSelectClienteVenta() {
+  var select = document.getElementById("venta-cliente-select");
+  if (!select) return;
+  var html = '<option value="">Sin cliente</option>';
+  clientesData.forEach(function(c) {
+    html += '<option value="' + c.id + '">' + c.nombre + '</option>';
+  });
+  select.innerHTML = html;
+}
+
+// ------------------------------------------------------------------
+// CRUD CLIENTES
+// ------------------------------------------------------------------
+
+function guardarCliente(evento) {
+  evento.preventDefault();
+  if (!clientesRef) { mostrarError("Firebase no está conectado."); return; }
+
+  var nombre = document.getElementById("cliente-nombre-input").value.trim();
+  if (!nombre) { alert("Ingresa el nombre del cliente."); return; }
+
+  var data = {
+    nombre: nombre,
+    telefono: document.getElementById("cliente-telefono-input").value.trim(),
+    direccion: document.getElementById("cliente-direccion-input").value.trim(),
+    barrio: document.getElementById("cliente-barrio-input").value.trim(),
+    fecha: new Date().toISOString()
+  };
+
+  if (clienteEditandoId) {
+    clientesRef.doc(clienteEditandoId).update(data).catch(function(e) {
+      mostrarError("Error al actualizar cliente: " + e.message);
+    });
+    cancelarEditarCliente();
+  } else {
+    clientesRef.add(data).catch(function(e) {
+      mostrarError("Error al guardar cliente: " + e.message);
+    });
+    document.getElementById("clientes-form").reset();
+  }
+}
+
+function editarCliente(id) {
+  var c = clientesData.find(function(x) { return x.id === id; });
+  if (!c) return;
+  clienteEditandoId = id;
+  document.getElementById("cliente-nombre-input").value = c.nombre;
+  document.getElementById("cliente-telefono-input").value = c.telefono;
+  document.getElementById("cliente-direccion-input").value = c.direccion;
+  document.getElementById("cliente-barrio-input").value = c.barrio;
+  document.getElementById("cancelar-editar-cliente-btn").classList.remove("hidden");
+}
+
+function cancelarEditarCliente() {
+  clienteEditandoId = null;
+  document.getElementById("clientes-form").reset();
+  document.getElementById("cancelar-editar-cliente-btn").classList.add("hidden");
+}
+
+function eliminarCliente(id) {
+  if (!confirm("¿Estás seguro de eliminar este cliente?")) return;
+  if (!clientesRef) { mostrarError("Firebase no está conectado."); return; }
+  clientesRef.doc(id).delete().catch(function(e) {
+    mostrarError("Error al eliminar cliente: " + e.message);
+  });
+}
+
+function renderClientes() {
+  var tbody = document.getElementById("clientes-lista");
+  var empty = document.getElementById("sin-clientes");
+  if (!tbody) return;
+
+  if (clientesData.length === 0) {
+    tbody.innerHTML = "";
+    if (empty) empty.classList.remove("hidden");
+    return;
+  }
+  if (empty) empty.classList.add("hidden");
+
+  var html = "";
+  clientesData.forEach(function(c) {
+    html += '<tr>' +
+      '<td><span class="nombre-ingrediente">' + escHtml(c.nombre) + '</span></td>' +
+      '<td>' + escHtml(c.telefono) + '</td>' +
+      '<td>' + escHtml(c.barrio) + '</td>' +
+      '<td>' + escHtml(c.direccion) + '</td>' +
+      '<td class="acciones">' +
+        '<button class="btn-editar" data-cliente-editar="' + c.id + '">Editar</button>' +
+        '<button class="btn-eliminar" data-cliente-eliminar="' + c.id + '">Eliminar</button>' +
+      '</td></tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+// ------------------------------------------------------------------
+// CRUD VENTAS
+// ------------------------------------------------------------------
+
+var ventaItemsCount = 0;
+
+function agregarItemVenta(recetaId, cantidad, precioUnitario) {
+  var container = document.getElementById("venta-items-container");
+  var emptyMsg = container.querySelector(".empty-venta-msg");
+  if (emptyMsg) emptyMsg.remove();
+
+  ventaItemsCount++;
+  var index = ventaItemsCount;
+
+  var html = '<div class="venta-item-row" data-venta-item="' + index + '">';
+
+  html += '<div class="form-group" style="flex:2">';
+  html += '  <label>Producto</label>';
+  html += '  <select class="venta-item-receta" data-item-index="' + index + '">';
+  html += '    <option value="">Seleccionar...</option>';
+  recetasData.forEach(function(r) {
+    if (!r.precioVenta) return;
+    var sel = r.id === recetaId ? "selected" : "";
+    html += '    <option value="' + r.id + '" data-precio="' + (r.precioVenta || 0) + '" ' + sel + '>' + r.nombre + '</option>';
+  });
+  html += '  </select>';
+  html += '</div>';
+
+  html += '<div class="form-group">';
+  html += '  <label>Cantidad</label>';
+  html += '  <input type="number" class="venta-item-cantidad" data-item-index="' + index + '" value="' + (cantidad || "") + '" min="1" step="1" placeholder="0" />';
+  html += '</div>';
+
+  html += '<div class="form-group">';
+  html += '  <label>Precio unit.</label>';
+  html += '  <input type="number" class="venta-item-precio" data-item-index="' + index + '" value="' + (precioUnitario || "") + '" step="0.01" min="0" placeholder="0" />';
+  html += '</div>';
+
+  html += '<div class="venta-item-subtotal" data-item-index="' + index + '">$0.00</div>';
+
+  html += '<button type="button" class="btn-quitar-item-venta" data-venta-quitar="' + index + '">×</button>';
+
+  html += '</div>';
+
+  container.insertAdjacentHTML("beforeend", html);
+  calcularTotalVenta();
+}
+
+function calcularTotalVenta() {
+  var rows = document.querySelectorAll(".venta-item-row");
+  var total = 0;
+  rows.forEach(function(row) {
+    var index = row.dataset.ventaItem;
+    var select = row.querySelector(".venta-item-receta");
+    var cantidad = parseFloat(row.querySelector(".venta-item-cantidad").value) || 0;
+    var precio = parseFloat(row.querySelector(".venta-item-precio").value) || 0;
+    var subtotal = cantidad * precio;
+    total += subtotal;
+    var subEl = row.querySelector(".venta-item-subtotal");
+    if (subEl) subEl.textContent = "$" + subtotal.toFixed(2);
+  });
+  document.getElementById("venta-total-valor").textContent = "$" + total.toFixed(2);
+}
+
+function guardarVenta(evento) {
+  evento.preventDefault();
+  if (!ventasRef) { mostrarError("Firebase no está conectado."); return; }
+
+  var items = [];
+  var rows = document.querySelectorAll(".venta-item-row");
+  rows.forEach(function(row) {
+    var select = row.querySelector(".venta-item-receta");
+    var recetaId = select.value;
+    if (!recetaId) return;
+    var opt = select.options[select.selectedIndex];
+    items.push({
+      recetaId: recetaId,
+      recetaNombre: opt.text,
+      cantidad: parseFloat(row.querySelector(".venta-item-cantidad").value) || 0,
+      precioUnitario: parseFloat(row.querySelector(".venta-item-precio").value) || 0,
+      subtotal: (parseFloat(row.querySelector(".venta-item-cantidad").value) || 0) * (parseFloat(row.querySelector(".venta-item-precio").value) || 0)
+    });
+  });
+
+  if (items.length === 0) { alert("Agrega al menos un producto a la venta."); return; }
+
+  var total = items.reduce(function(s, i) { return s + i.subtotal; }, 0);
+  var clienteSelect = document.getElementById("venta-cliente-select");
+  var clienteId = clienteSelect.value;
+  var clienteNombre = clienteId ? clienteSelect.options[clienteSelect.selectedIndex].text : "";
+
+  var data = {
+    clienteId: clienteId,
+    clienteNombre: clienteNombre,
+    fecha: document.getElementById("venta-fecha-input").value || new Date().toISOString().split("T")[0],
+    items: items,
+    total: total,
+    fechaCreacion: new Date().toISOString()
+  };
+
+  if (ventaEditandoId) {
+    ventasRef.doc(ventaEditandoId).update(data).catch(function(e) {
+      mostrarError("Error al actualizar venta: " + e.message);
+    });
+    alert("✅ Venta actualizada: $" + total.toFixed(2));
+    cancelarEditarVenta();
+  } else {
+    ventasRef.add(data).catch(function(e) {
+      mostrarError("Error al guardar venta: " + e.message);
+    });
+    limpiarFormVenta();
+    alert("✅ Venta guardada: $" + total.toFixed(2));
+  }
+}
+
+function editarVenta(id) {
+  var v = ventasData.find(function(x) { return x.id === id; });
+  if (!v) return;
+
+  ventaEditandoId = id;
+  document.getElementById("cancelar-editar-venta-btn").classList.remove("hidden");
+  document.querySelector("#ventas-section h2").textContent = "Editar venta";
+
+  // Cliente
+  if (v.clienteId) {
+    document.getElementById("venta-cliente-select").value = v.clienteId;
+  }
+
+  // Fecha
+  var fechaInput = document.getElementById("venta-fecha-input");
+  if (v.fecha) {
+    fechaInput.value = v.fecha;
+  }
+
+  // Items
+  var container = document.getElementById("venta-items-container");
+  container.innerHTML = "";
+  ventaItemsCount = 0;
+  (v.items || []).forEach(function(item) {
+    agregarItemVenta(item.recetaId, item.cantidad, item.precioUnitario);
+  });
+
+  calcularTotalVenta();
+}
+
+function cancelarEditarVenta() {
+  ventaEditandoId = null;
+  document.getElementById("cancelar-editar-venta-btn").classList.add("hidden");
+  document.querySelector("#ventas-section h2").textContent = "Registrar venta";
+  limpiarFormVenta();
+}
+
+function limpiarFormVenta() {
+  document.getElementById("ventas-form").reset();
+  var container = document.getElementById("venta-items-container");
+  container.innerHTML = '<p class="empty-venta-msg">Agrega productos a la venta</p>';
+  ventaItemsCount = 0;
+  document.getElementById("venta-total-valor").textContent = "$0.00";
+}
+
+function eliminarVenta(id) {
+  if (!confirm("¿Estás seguro de eliminar esta venta?")) return;
+  if (!ventasRef) { mostrarError("Firebase no está conectado."); return; }
+  ventasRef.doc(id).delete().catch(function(e) {
+    mostrarError("Error al eliminar venta: " + e.message);
+  });
+}
+
+function renderVentas() {
+  var tbody = document.getElementById("ventas-lista");
+  var empty = document.getElementById("sin-ventas");
+  if (!tbody) return;
+
+  if (ventasData.length === 0) {
+    tbody.innerHTML = "";
+    if (empty) empty.classList.remove("hidden");
+    return;
+  }
+  if (empty) empty.classList.add("hidden");
+
+  var html = "";
+  ventasData.forEach(function(v) {
+    var fecha = v.fecha || "—";
+    var prodLabels = (v.items || []).map(function(i) {
+      return i.cantidad + " × " + i.recetaNombre;
+    }).join(", ");
+    if (prodLabels.length > 60) prodLabels = prodLabels.substring(0, 57) + "…";
+
+    html += '<tr>' +
+      '<td>' + fecha + '</td>' +
+      '<td>' + escHtml(v.clienteNombre || "—") + '</td>' +
+      '<td>' + escHtml(prodLabels) + '</td>' +
+      '<td><strong>$' + (v.total || 0).toFixed(0) + '</strong></td>' +
+      '<td class="acciones">' +
+        '<button class="btn-venta-editar" data-venta-editar="' + v.id + '">Editar</button>' +
+        '<button class="btn-venta-eliminar" data-venta-eliminar="' + v.id + '">Eliminar</button>' +
+      '</td></tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function escHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// Eventos delegados de Ventas
+document.addEventListener("change", function(e) {
+  var select = e.target.closest(".venta-item-receta");
+  if (select) {
+    var row = select.closest(".venta-item-row");
+    if (row) {
+      var opt = select.options[select.selectedIndex];
+      var precio = opt && opt.dataset.precio ? parseFloat(opt.dataset.precio) : 0;
+      var precioInput = row.querySelector(".venta-item-precio");
+      if (precioInput && precio > 0) precioInput.value = precio.toFixed(2);
+      calcularTotalVenta();
+    }
+  }
+});
+
+document.addEventListener("input", function(e) {
+  if (e.target.closest(".venta-item-cantidad") || e.target.closest(".venta-item-precio")) {
+    calcularTotalVenta();
+  }
+});
+
+document.addEventListener("click", function(e) {
+  var quitar = e.target.closest("[data-venta-quitar]");
+  if (quitar) {
+    var row = quitar.closest(".venta-item-row");
+    if (row) row.remove();
+    calcularTotalVenta();
+    var container = document.getElementById("venta-items-container");
+    if (!container.querySelector(".venta-item-row")) {
+      container.innerHTML = '<p class="empty-venta-msg">Agrega productos a la venta</p>';
+    }
+  }
+
+  var editarClienteBtn = e.target.closest("[data-cliente-editar]");
+  if (editarClienteBtn) editarCliente(editarClienteBtn.dataset.clienteEditar);
+
+  var eliminarClienteBtn = e.target.closest("[data-cliente-eliminar]");
+  if (eliminarClienteBtn) eliminarCliente(eliminarClienteBtn.dataset.clienteEliminar);
+
+  var editarVentaBtn = e.target.closest("[data-venta-editar]");
+  if (editarVentaBtn) editarVenta(editarVentaBtn.dataset.ventaEditar);
+
+  var eliminarVentaBtn = e.target.closest("[data-venta-eliminar]");
+  if (eliminarVentaBtn) eliminarVenta(eliminarVentaBtn.dataset.ventaEliminar);
+});
 
 // ============================================================
 // ERRORES

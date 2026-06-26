@@ -29,6 +29,7 @@
           <button class="tab" data-tab="recetas">Recetas</button>
           <button class="tab" data-tab="produccion">Producción</button>
           <button class="tab" data-tab="historial">Historial</button>
+          <button class="tab" data-tab="ventas">Ventas</button>
         </nav>
       </div>
       <button onclick="cerrarSesion()" class="btn-logout">Cerrar sesión</button>
@@ -330,6 +331,113 @@
         <div id="historial-por-receta"></div>
 
         <p id="sin-historial" class="empty-msg">No hay producciones guardadas.</p>
+      </section>
+
+    </main>
+    </div>
+
+    <!-- ===== VENTAS ===== -->
+    <div id="seccion-ventas" class="tab-panel">
+    <main>
+
+      <!-- CLIENTES -->
+      <section id="clientes-section">
+        <h2>Clientes</h2>
+        <form id="clientes-form">
+          <div class="form-group">
+            <label for="cliente-nombre-input">Nombre <span class="opcional-hint">(requerido)</span></label>
+            <input type="text" id="cliente-nombre-input" placeholder="Ej: María López" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cliente-telefono-input">Teléfono <span class="opcional-hint">(opcional)</span></label>
+              <input type="text" id="cliente-telefono-input" placeholder="Ej: 809-555-1234" />
+            </div>
+            <div class="form-group">
+              <label for="cliente-barrio-input">Barrio <span class="opcional-hint">(opcional)</span></label>
+              <input type="text" id="cliente-barrio-input" placeholder="Ej: Los Prados" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="cliente-direccion-input">Dirección <span class="opcional-hint">(opcional)</span></label>
+            <input type="text" id="cliente-direccion-input" placeholder="Ej: Calle 5, #10" />
+          </div>
+          <div class="form-buttons">
+            <button type="submit" class="btn-primary">Guardar cliente</button>
+            <button type="button" id="cancelar-editar-cliente-btn" class="btn-secondary hidden">Cancelar edición</button>
+          </div>
+        </form>
+
+        <div class="table-container">
+          <table id="clientes-tabla">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Barrio</th>
+                <th>Dirección</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="clientes-lista"></tbody>
+          </table>
+        </div>
+        <p id="sin-clientes" class="empty-msg">No hay clientes registrados.</p>
+      </section>
+
+      <!-- VENTAS -->
+      <section id="ventas-section" style="margin-top:32px">
+        <h2>Registrar venta</h2>
+        <form id="ventas-form">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="venta-cliente-select">Cliente <span class="opcional-hint">(opcional)</span></label>
+              <select id="venta-cliente-select">
+                <option value="">Sin cliente</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="venta-fecha-input">Fecha de compra</label>
+              <input type="date" id="venta-fecha-input" />
+            </div>
+          </div>
+
+          <div id="venta-items-container">
+            <p class="empty-venta-msg">Agrega productos a la venta</p>
+          </div>
+
+          <button type="button" id="agregar-item-venta-btn" class="btn-secondary btn-agregar-ingr">+ Agregar producto</button>
+
+          <div id="venta-total-box" class="venta-total">
+            <span>TOTAL:</span>
+            <strong id="venta-total-valor">$0.00</strong>
+          </div>
+
+          <div class="form-buttons">
+            <button type="submit" class="btn-primary">Guardar venta</button>
+            <button type="button" id="cancelar-editar-venta-btn" class="btn-secondary hidden">Cancelar edición</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="ventas-list-section" style="margin-top:32px">
+        <h2>Historial de ventas</h2>
+        <div class="table-container">
+          <table id="ventas-tabla">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Productos</th>
+                <th>Total</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="ventas-lista"></tbody>
+          </table>
+        </div>
+        <p id="sin-ventas" class="empty-msg">No hay ventas registradas.</p>
       </section>
 
     </main>

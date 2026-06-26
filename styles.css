@@ -1561,3 +1561,215 @@ th.sortable.sort-desc::after {
     font-size: 0.85rem;
   }
 }
+
+/* =============================================================
+   16. VENTAS
+   ============================================================= */
+
+.opcional-hint {
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+#clientes-section {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
+  margin-bottom: 28px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+#clientes-section h2,
+#ventas-section h2,
+#ventas-list-section h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#ventas-section {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
+  margin-bottom: 28px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+#ventas-list-section {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.venta-item-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 12px;
+  padding: 16px;
+  background: #faf8f5;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+}
+
+.venta-item-row .form-group {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 90px;
+}
+
+.venta-item-row .form-group select,
+.venta-item-row .form-group input {
+  padding: 12px 12px;
+  font-size: 0.95rem;
+}
+
+.venta-item-row .form-group label {
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #4b5563;
+}
+
+.venta-item-subtotal {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #059669;
+  white-space: nowrap;
+  min-width: 90px;
+  justify-content: flex-end;
+  padding: 8px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.btn-quitar-item-venta {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  border-radius: 8px;
+  width: 42px;
+  height: 42px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-quitar-item-venta:hover {
+  background: #dc2626;
+  color: white;
+}
+
+.empty-venta-msg {
+  text-align: center;
+  color: #6b7280;
+  padding: 28px;
+  font-size: 1rem;
+  font-style: italic;
+}
+
+.venta-total {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  margin-top: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #92400e;
+  border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+.venta-total strong {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+}
+
+.btn-venta-editar {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.btn-venta-editar:hover {
+  background-color: #1d4ed8;
+  color: white;
+}
+
+.btn-venta-eliminar {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: #fee2e2;
+  color: #dc2626;
+  margin-left: 4px;
+}
+
+.btn-venta-eliminar:hover {
+  background-color: #dc2626;
+  color: white;
+}
+
+@media (max-width: 600px) {
+  #clientes-section,
+  #ventas-section,
+  #ventas-list-section {
+    padding: 20px 16px;
+  }
+
+  .venta-item-row {
+    flex-wrap: wrap;
+    padding: 12px;
+  }
+
+  .venta-item-row .form-group {
+    min-width: calc(50% - 20px);
+    flex: 1;
+  }
+
+  .venta-item-row .form-group:first-child {
+    min-width: 100%;
+  }
+
+  .venta-item-subtotal {
+    min-width: auto;
+    padding: 6px 0;
+  }
+
+  .venta-total strong {
+    font-size: 1.3rem;
+  }
+}
