@@ -15,6 +15,7 @@ let historialPorPagina = 50;
 let clientesRef = null;
 let clientesData = [];
 let clienteEditandoId = null;
+let ventasPeriodo = "month";
 let ventasRef = null;
 let ventasData = [];
 let ventaEditandoId = null;
@@ -1653,20 +1654,51 @@ function eliminarVenta(id) {
   });
 }
 
+function cambiarPeriodoVentas(periodo) {
+  ventasPeriodo = periodo;
+  document.querySelectorAll(".ventas-periodo").forEach(function(b) {
+    b.classList.toggle("active", b.dataset.periodo === periodo);
+  });
+  renderVentas();
+}
+
 function renderVentas() {
   var tbody = document.getElementById("ventas-lista");
+  var resumen = document.getElementById("ventas-resumen");
   var empty = document.getElementById("sin-ventas");
   if (!tbody) return;
 
-  if (ventasData.length === 0) {
+  document.querySelectorAll(".ventas-periodo").forEach(function(b) {
+    b.classList.toggle("active", b.dataset.periodo === ventasPeriodo);
+  });
+
+  var filtradas = filtrarProducciones(ventasData, ventasPeriodo);
+
+  if (filtradas.length === 0) {
     tbody.innerHTML = "";
+    if (resumen) resumen.classList.add("hidden");
     if (empty) empty.classList.remove("hidden");
     return;
   }
   if (empty) empty.classList.add("hidden");
+  if (resumen) resumen.classList.remove("hidden");
 
+  // Resumen
+  var total = 0, maxVenta = 0;
+  filtradas.forEach(function(v) {
+    total += v.total || 0;
+    if ((v.total || 0) > maxVenta) maxVenta = v.total;
+  });
+  var promedio = total / filtradas.length;
+
+  document.getElementById("ventas-res-count").textContent = filtradas.length;
+  document.getElementById("ventas-res-total").textContent = "$" + total.toFixed(0);
+  document.getElementById("ventas-res-promedio").textContent = "$" + promedio.toFixed(0);
+  document.getElementById("ventas-res-max").textContent = "$" + maxVenta.toFixed(0);
+
+  // Tabla
   var html = "";
-  ventasData.forEach(function(v) {
+  filtradas.forEach(function(v) {
     var fecha = v.fecha || "—";
     var prodLabels = (v.items || []).map(function(i) {
       return i.cantidad + " × " + i.recetaNombre;
@@ -1739,6 +1771,9 @@ document.addEventListener("click", function(e) {
 
   var eliminarVentaBtn = e.target.closest("[data-venta-eliminar]");
   if (eliminarVentaBtn) eliminarVenta(eliminarVentaBtn.dataset.ventaEliminar);
+
+  var ventaPeriodoBtn = e.target.closest(".ventas-periodo");
+  if (ventaPeriodoBtn) cambiarPeriodoVentas(ventaPeriodoBtn.dataset.periodo);
 });
 
 // ============================================================

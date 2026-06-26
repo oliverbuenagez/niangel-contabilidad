@@ -423,6 +423,34 @@
 
       <section id="ventas-list-section" style="margin-top:32px">
         <h2>Historial de ventas</h2>
+
+        <div class="historial-filtros">
+          <button class="historial-btn ventas-periodo" data-periodo="today">Hoy</button>
+          <button class="historial-btn ventas-periodo" data-periodo="week">Semana</button>
+          <button class="historial-btn ventas-periodo" data-periodo="month">Mes</button>
+          <button class="historial-btn ventas-periodo" data-periodo="year">Año</button>
+          <button class="historial-btn ventas-periodo" data-periodo="all">Todo</button>
+        </div>
+
+        <div class="historial-resumen" id="ventas-resumen">
+          <div class="hist-card">
+            <div class="hist-card-label">Ventas</div>
+            <div class="hist-card-valor" id="ventas-res-count">0</div>
+          </div>
+          <div class="hist-card">
+            <div class="hist-card-label">Total vendido</div>
+            <div class="hist-card-valor hist-verde" id="ventas-res-total">$0</div>
+          </div>
+          <div class="hist-card">
+            <div class="hist-card-label">Promedio</div>
+            <div class="hist-card-valor" id="ventas-res-promedio">$0</div>
+          </div>
+          <div class="hist-card">
+            <div class="hist-card-label">Venta mayor</div>
+            <div class="hist-card-valor" id="ventas-res-max">$0</div>
+          </div>
+        </div>
+
         <div class="table-container">
           <table id="ventas-tabla">
             <thead>
