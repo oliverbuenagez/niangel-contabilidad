@@ -268,7 +268,7 @@ header h1 {
    ============================================================= */
 
 main {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 32px 24px;
 }
@@ -285,6 +285,15 @@ main {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
   margin-bottom: 28px;
   border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+#form-section,
+#receta-form-section,
+#produccion-form-section,
+#ventas-section {
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #form-section h2,
@@ -554,10 +563,6 @@ td.unidad-col {
 /* =============================================================
    SECCIÓN RECETAS
    ============================================================= */
-
-#receta-form-section {
-  margin-bottom: 28px;
-}
 
 .receta-ingr-row {
   display: flex;
@@ -1579,6 +1584,9 @@ th.sortable.sort-desc::after {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
   margin-bottom: 28px;
   border: 1px solid rgba(0, 0, 0, 0.04);
+  max-width: 850px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #clientes-section h2,
