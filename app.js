@@ -292,16 +292,19 @@ function configurarEventos() {
       document.querySelectorAll(".tab-panel").forEach(function(p) { p.classList.remove("active"); });
       tab.classList.add("active");
       document.getElementById("seccion-" + tab.dataset.tab).classList.add("active");
-      if (tab.dataset.tab === "produccion") llenarSelectReceta();
-      if (tab.dataset.tab === "historial") actualizarHistorial();
+      if (tab.dataset.tab === "produccion") {
+        llenarSelectReceta();
+        actualizarHistorial();
+      }
       if (tab.dataset.tab === "ventas") {
         llenarSelectClienteVenta();
         // Si no hay fecha, poner hoy
         var fechaInput = document.getElementById("venta-fecha-input");
         if (fechaInput && !fechaInput.value) {
-          fechaInput.value = new Date().toISOString().split("T")[0];
+          fechaInput.value = fechaHoyLocal();
         }
       }
+      if (tab.dataset.tab === "estadisticas") renderEstadisticas();
     });
   });
 
@@ -1051,7 +1054,9 @@ function filtrarProducciones(producciones, periodo) {
 
   return producciones.filter(function(p) {
     if (!p.fecha) return false;
-    var f = new Date(p.fecha);
+    // Parsear YYYY-MM-DD como fecha local (no UTC)
+    var parts = p.fecha.split("-");
+    var f = parts.length === 3 ? new Date(+parts[0], +parts[1] - 1, +parts[2]) : new Date(p.fecha);
     return f >= inicio && f <= ahora;
   });
 }
@@ -1580,7 +1585,7 @@ function guardarVenta(evento) {
   var data = {
     clienteId: clienteId,
     clienteNombre: clienteNombre,
-    fecha: document.getElementById("venta-fecha-input").value || new Date().toISOString().split("T")[0],
+    fecha: document.getElementById("venta-fecha-input").value || fechaHoyLocal(),
     items: items,
     total: total,
     fechaCreacion: new Date().toISOString()
@@ -1644,6 +1649,8 @@ function limpiarFormVenta() {
   container.innerHTML = '<p class="empty-venta-msg">Agrega productos a la venta</p>';
   ventaItemsCount = 0;
   document.getElementById("venta-total-valor").textContent = "$0.00";
+  // Restaurar fecha a hoy
+  document.getElementById("venta-fecha-input").value = fechaHoyLocal();
 }
 
 function eliminarVenta(id) {
@@ -1774,7 +1781,542 @@ document.addEventListener("click", function(e) {
 
   var ventaPeriodoBtn = e.target.closest(".ventas-periodo");
   if (ventaPeriodoBtn) cambiarPeriodoVentas(ventaPeriodoBtn.dataset.periodo);
+
+  var estPeriodoBtn = e.target.closest(".est-periodo");
+  if (estPeriodoBtn) cambiarPeriodoEst(estPeriodoBtn.dataset.periodo);
+
+  var estCard = e.target.closest(".est-card");
+  if (estCard) {
+    var label = estCard.querySelector(".hist-card-label");
+    var tipo = label && label.textContent.trim().toLowerCase();
+    if (tipo === "ventas") mostrarDetalleCard("ventas");
+    else if (tipo === "total vendido") mostrarDetalleCard("total");
+    else if (tipo === "promedio") mostrarDetalleCard("promedio");
+    else if (tipo === "venta mayor") mostrarDetalleCard("max");
+    else if (tipo === "más vendido") mostrarDetalleCard("top-producto");
+    else if (tipo === "top cliente") mostrarDetalleCard("top-cliente");
+  }
 });
+
+// ============================================================
+// ESTADÍSTICAS
+// ============================================================
+
+var estPeriodo = "month";
+var estFiltradas = [];
+var estStats = {};
+
+function cambiarPeriodoEst(periodo) {
+  estPeriodo = periodo;
+  document.querySelectorAll(".est-periodo").forEach(function(b) {
+    b.classList.toggle("active", b.dataset.periodo === periodo);
+  });
+  renderEstadisticas();
+}
+
+function renderEstadisticas() {
+  var section = document.getElementById("estadisticas-section");
+  if (!section || section.offsetParent === null) return;
+
+  document.querySelectorAll(".est-periodo").forEach(function(b) {
+    b.classList.toggle("active", b.dataset.periodo === estPeriodo);
+  });
+
+  estFiltradas = filtrarProducciones(ventasData, estPeriodo);
+  var emptyMsg = document.getElementById("sin-est");
+
+  if (estFiltradas.length === 0) {
+    document.getElementById("est-resumen").classList.add("hidden");
+    document.getElementById("est-grafica-container").style.display = "none";
+    document.getElementById("est-por-producto").innerHTML = "";
+    document.getElementById("est-por-dia").innerHTML = "";
+    emptyMsg.classList.remove("hidden");
+    return;
+  }
+  emptyMsg.classList.add("hidden");
+  document.getElementById("est-resumen").classList.remove("hidden");
+  document.getElementById("est-grafica-container").style.display = "";
+
+  // Cards resumen
+  var total = 0, maxVenta = 0, maxVentaId = null;
+  var prodCount = {};
+  var clienteTotales = {};
+  estFiltradas.forEach(function(v) {
+    total += v.total || 0;
+    if ((v.total || 0) > maxVenta) {
+      maxVenta = v.total;
+      maxVentaId = v.id;
+    }
+    (v.items || []).forEach(function(item) {
+      prodCount[item.recetaNombre] = (prodCount[item.recetaNombre] || 0) + item.cantidad;
+    });
+    if (v.clienteNombre) {
+      clienteTotales[v.clienteNombre] = (clienteTotales[v.clienteNombre] || 0) + (v.total || 0);
+    }
+  });
+  var promedio = total / estFiltradas.length;
+
+  var topProducto = Object.keys(prodCount).length
+    ? Object.keys(prodCount).reduce(function(a, b) { return prodCount[a] > prodCount[b] ? a : b; })
+    : null;
+  var topCliente = Object.keys(clienteTotales).length
+    ? Object.keys(clienteTotales).reduce(function(a, b) { return clienteTotales[a] > clienteTotales[b] ? a : b; })
+    : null;
+
+  estStats = {
+    total: total,
+    maxVenta: maxVenta,
+    maxVentaId: maxVentaId,
+    promedio: promedio,
+    prodCount: prodCount,
+    topProducto: topProducto,
+    clienteTotales: clienteTotales,
+    topCliente: topCliente
+  };
+
+  document.getElementById("est-count").textContent = estFiltradas.length;
+  document.getElementById("est-total").textContent = "$" + total.toFixed(0);
+  document.getElementById("est-promedio").textContent = "$" + promedio.toFixed(0);
+  document.getElementById("est-max").textContent = "$" + maxVenta.toFixed(0);
+  document.getElementById("est-top-producto").textContent = topProducto || "—";
+  document.getElementById("est-top-cliente").textContent = topCliente || "—";
+
+  // Gráfica de barras (ventas totales por día)
+  dibujarGraficaEst(estFiltradas);
+
+  // Por producto
+  renderEstPorProducto(estFiltradas);
+
+  // Por día de la semana
+  renderEstPorDia(estFiltradas);
+}
+
+function renderEstPorProducto(ventas) {
+  var porProd = {};
+  ventas.forEach(function(v) {
+    (v.items || []).forEach(function(item) {
+      if (!porProd[item.recetaNombre]) {
+        porProd[item.recetaNombre] = { unidades: 0, total: 0 };
+      }
+      porProd[item.recetaNombre].unidades += item.cantidad;
+      porProd[item.recetaNombre].total += item.subtotal;
+    });
+  });
+
+  var nombres = Object.keys(porProd);
+  if (nombres.length === 0) {
+    document.getElementById("est-por-producto").innerHTML = "";
+    return;
+  }
+
+  nombres.sort(function(a, b) { return porProd[b].total - porProd[a].total; });
+  var maxTotal = porProd[nombres[0]].total || 1;
+
+  var html = '<div class="est-barras-h">';
+  nombres.forEach(function(n, i) {
+    var p = porProd[n];
+    var prom = p.unidades > 0 ? p.total / p.unidades : 0;
+    var pct = (p.total / maxTotal) * 100;
+    var opacidad = 0.35 + (1 - i / nombres.length) * 0.65;
+    var delay = i * 60;
+    html += '<div class="est-bh-fila" style="animation-delay:' + delay + 'ms">' +
+      '<div class="est-bh-izq">' +
+        '<span class="est-bh-nombre">' + n + '</span>' +
+        '<span class="est-bh-detalle">' + p.unidades + ' unid  •  $' + prom.toFixed(0) + '/u</span>' +
+      '</div>' +
+      '<div class="est-bh-pista">' +
+        '<div class="est-bh-barra" style="width:' + pct + '%;opacity:' + opacidad + ';transition-delay:' + delay + 'ms">' +
+          '<span class="est-bh-monto">' + formatearDinero(p.total) + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  });
+  html += '</div>';
+  document.getElementById("est-por-producto").innerHTML = html;
+}
+
+function renderEstPorDia(ventas) {
+  var diasCorto = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+  var porDia = {};
+  for (var i = 0; i < 7; i++) porDia[i] = { count: 0, total: 0 };
+
+  ventas.forEach(function(v) {
+    if (!v.fecha) return;
+    var parts = v.fecha.split("-");
+    var d = parts.length === 3 ? new Date(+parts[0], +parts[1] - 1, +parts[2]) : new Date(v.fecha);
+    if (isNaN(d.getTime())) return;
+    porDia[d.getDay()].count++;
+    porDia[d.getDay()].total += v.total || 0;
+  });
+
+  var maxTotal = 0;
+  for (var i = 0; i < 7; i++) {
+    if (porDia[i].total > maxTotal) maxTotal = porDia[i].total;
+  }
+  if (maxTotal === 0) maxTotal = 1;
+
+  var html = '<div class="est-semana">';
+  for (var i = 0; i < 7; i++) {
+    var d = porDia[i];
+    var pct = (d.total / maxTotal) * 100;
+    var barH = Math.max(pct, 3);
+    var delay = i * 80;
+    html += '<div class="est-semana-col" style="animation-delay:' + delay + 'ms">' +
+      '<div class="est-semana-valor">' + formatearDinero(d.total) + '</div>' +
+      '<div class="est-semana-barra-wrap">' +
+        '<div class="est-semana-barra" style="height:' + barH + '%;transition-delay:' + delay + 'ms"></div>' +
+      '</div>' +
+      '<div class="est-semana-nombre">' + diasCorto[i] + '</div>' +
+      '<div class="est-semana-count">' + d.count + '</div>' +
+    '</div>';
+  }
+  html += '</div>';
+  document.getElementById("est-por-dia").innerHTML = html;
+}
+
+function dibujarGraficaEst(ventas) {
+  var canvas = document.getElementById("est-grafica");
+  if (!canvas) return;
+  var ctx = canvas.getContext("2d");
+  var container = canvas.parentElement;
+  var rect = container.getBoundingClientRect();
+  var dpr = window.devicePixelRatio || 1;
+  var w = rect.width - 32, h = 260;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
+  ctx.scale(dpr, dpr);
+
+  // Agrupar por día
+  var grupos = {};
+  var fechasOrden = [];
+  ventas.forEach(function(v) {
+    if (!v.fecha) return;
+    var parts = v.fecha.split("-");
+    var d = parts.length === 3 ? new Date(+parts[0], +parts[1] - 1, +parts[2]) : new Date(v.fecha);
+    if (isNaN(d.getTime())) return;
+    var key = d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+    if (!grupos[key]) fechasOrden.push(key);
+    grupos[key] = (grupos[key] || 0) + (v.total || 0);
+  });
+
+  var nombres = fechasOrden;
+  if (nombres.length === 0) return;
+
+  ctx.clearRect(0, 0, w, h);
+
+  var valores = nombres.map(function(n) { return grupos[n]; });
+  var maxVal = Math.max.apply(null, valores) || 1;
+
+  var roundTo = Math.pow(10, Math.floor(Math.log10(maxVal)));
+  var yMax = Math.ceil(maxVal / roundTo) * roundTo;
+  if (yMax === 0) yMax = 1;
+
+  var padding = { top: 28, bottom: 38, left: 56, right: 20 };
+  var chartW = w - padding.left - padding.right;
+  var chartH = h - padding.top - padding.bottom;
+  var barW = Math.min(44, (chartW / nombres.length) * 0.55);
+  var gap = (chartW - barW * nombres.length) / (nombres.length + 1);
+  var fontFamily = getComputedStyle(document.body).fontFamily;
+
+  // Fondo blanco redondeado
+  ctx.fillStyle = "#fafafa";
+  roundRect(ctx, 0, 0, w, h, 12);
+  ctx.fill();
+
+  // Grid + Y axis
+  var numLines = 4;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  ctx.strokeStyle = "#e5e7eb";
+  ctx.lineWidth = 1;
+  for (var i = 0; i <= numLines; i++) {
+    var yVal = (yMax / numLines) * i;
+    var yPos = padding.top + chartH - (yVal / yMax) * chartH;
+    ctx.beginPath();
+    ctx.moveTo(padding.left - 4, yPos);
+    ctx.lineTo(w - padding.right, yPos);
+    ctx.stroke();
+    ctx.fillStyle = "#9ca3af";
+    ctx.font = "11px " + fontFamily;
+    ctx.fillText("$" + yVal.toFixed(0), padding.left - 10, yPos);
+  }
+  ctx.textBaseline = "alphabetic";
+
+  // Eje X
+  ctx.strokeStyle = "#d1d5db";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(padding.left, padding.top + chartH + 0.5);
+  ctx.lineTo(w - padding.right, padding.top + chartH + 0.5);
+  ctx.stroke();
+
+  ctx.textAlign = "center";
+
+  // Animación: barras crecen
+  var animProgress = 0, animStart = null, animDuration = 350;
+
+  function step(timestamp) {
+    if (!animStart) animStart = timestamp;
+    var elapsed = timestamp - animStart;
+    animProgress = Math.min(elapsed / animDuration, 1);
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#fafafa";
+    roundRect(ctx, 0, 0, w, h, 12);
+    ctx.fill();
+
+    // Grid
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.strokeStyle = "#e5e7eb";
+    ctx.lineWidth = 1;
+    for (var i = 0; i <= numLines; i++) {
+      var yVal = (yMax / numLines) * i;
+      var yPos = padding.top + chartH - (yVal / yMax) * chartH;
+      ctx.beginPath();
+      ctx.moveTo(padding.left - 4, yPos);
+      ctx.lineTo(w - padding.right, yPos);
+      ctx.stroke();
+      ctx.fillStyle = "#9ca3af";
+      ctx.font = "11px " + fontFamily;
+      ctx.fillText("$" + yVal.toFixed(0), padding.left - 10, yPos);
+    }
+    ctx.textBaseline = "alphabetic";
+
+    ctx.strokeStyle = "#d1d5db";
+    ctx.beginPath();
+    ctx.moveTo(padding.left, padding.top + chartH + 0.5);
+    ctx.lineTo(w - padding.right, padding.top + chartH + 0.5);
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+
+    nombres.forEach(function(nombre, i) {
+      var val = grupos[nombre];
+      var barH = (val / yMax) * chartH * animProgress;
+      var x = padding.left + gap + i * (barW + gap);
+      var y = padding.top + chartH - barH;
+
+      var grad = ctx.createLinearGradient(x, y, x, padding.top + chartH);
+      grad.addColorStop(0, "#d97706");
+      grad.addColorStop(1, "#f59e0b");
+      ctx.fillStyle = grad;
+
+      var r = 3;
+      ctx.beginPath();
+      ctx.moveTo(x, padding.top + chartH);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.lineTo(x + barW - r, y);
+      ctx.quadraticCurveTo(x + barW, y, x + barW, y + r);
+      ctx.lineTo(x + barW, padding.top + chartH);
+      ctx.closePath();
+      ctx.fill();
+
+      // Etiqueta día
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "10px " + fontFamily;
+      ctx.fillText(nombre, x + barW / 2, padding.top + chartH + 20);
+
+      // Valor cuando la barra tiene algo de altura
+      if (barH > 6) {
+        ctx.fillStyle = "#111827";
+        ctx.font = "bold 11px " + fontFamily;
+        if (nombres.length <= 12) {
+          ctx.fillText(formatearDinero(val), x + barW / 2, y - 8);
+        }
+      }
+    });
+
+    if (animProgress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function formatearDinero(num) {
+  return "$" + num.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function fechaHoyLocal() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function cerrarModalEst() {
+  document.getElementById("est-modal-overlay").classList.add("hidden");
+}
+
+function mostrarDetalleCard(tipo) {
+  var overlay = document.getElementById("est-modal-overlay");
+  var titulo = document.getElementById("est-modal-titulo");
+  var body = document.getElementById("est-modal-body");
+  if (!overlay || !titulo || !body) return;
+
+  if (estFiltradas.length === 0) return;
+
+  var s = estStats;
+  var html = "";
+
+  switch (tipo) {
+    case "ventas":
+      titulo.textContent = "🧾 Lista de ventas del período";
+      html = '<div class="est-modal-total">' + estFiltradas.length + '</div>' +
+        '<div class="est-modal-sub">ventas en este período</div>' +
+        '<table><thead><tr><th>Fecha</th><th>Cliente</th><th>Total</th></tr></thead><tbody>';
+      estFiltradas.forEach(function(v) {
+        html += '<tr><td>' + (v.fecha || "—") + '</td><td>' + escHtml(v.clienteNombre || "—") + '</td><td>$' + (v.total || 0).toFixed(0) + '</td></tr>';
+      });
+      html += '</tbody></table>';
+      break;
+
+    case "total":
+      titulo.textContent = "💰 Total vendido";
+      html = '<div class="est-modal-total">' + formatearDinero(s.total) + '</div>' +
+        '<div class="est-modal-sub">en ' + estFiltradas.length + ' ventas</div>';
+      // Top productos contribución
+      var topN = Object.keys(s.prodCount).sort(function(a,b) { return s.prodCount[b] - s.prodCount[a]; }).slice(0, 5);
+      if (topN.length) {
+        html += '<h4 style="margin:12px 0 8px;font-size:0.95rem">Top productos</h4><table><thead><tr><th>Producto</th><th>Unidades</th></tr></thead><tbody>';
+        topN.forEach(function(n) {
+          html += '<tr><td>' + n + '</td><td>' + s.prodCount[n] + '</td></tr>';
+        });
+        html += '</tbody></table>';
+      }
+      break;
+
+    case "promedio":
+      titulo.textContent = "📊 Promedio por venta";
+      html = '<div class="est-modal-total">' + formatearDinero(s.promedio) + '</div>' +
+        '<div class="est-modal-sub">promedio de ' + estFiltradas.length + ' ventas</div>';
+      // Mostrar cuántas están arriba/abajo
+      var arriba = estFiltradas.filter(function(v) { return (v.total || 0) > s.promedio; }).length;
+      var abajo = estFiltradas.length - arriba;
+      html += '<table><thead><tr><th></th><th>Cantidad</th></tr></thead><tbody>' +
+        '<tr><td>💰 Sobre el promedio</td><td>' + arriba + '</td></tr>' +
+        '<tr><td>📉 Bajo el promedio</td><td>' + abajo + '</td></tr>' +
+        '</tbody></table>';
+      break;
+
+    case "max":
+      titulo.textContent = "🏆 Venta mayor";
+      html = '<div class="est-modal-total">' + formatearDinero(s.maxVenta) + '</div>' +
+        '<div class="est-modal-sub">venta más alta del período</div>';
+      // Mostrar las primeras 3 más altas
+      var topVentas = estFiltradas.slice().sort(function(a,b) { return (b.total || 0) - (a.total || 0); }).slice(0, 5);
+      html += '<table><thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Total</th></tr></thead><tbody>';
+      topVentas.forEach(function(v, i) {
+        html += '<tr><td>' + (i+1) + '</td><td>' + (v.fecha || "—") + '</td><td>' + escHtml(v.clienteNombre || "—") + '</td><td>$' + (v.total || 0).toFixed(0) + '</td></tr>';
+      });
+      html += '</tbody></table>';
+      break;
+
+    case "top-producto":
+      if (!s.topProducto) { cerrarModalEst(); return; }
+      titulo.textContent = "🥇 " + s.topProducto;
+      html = '<div class="est-modal-total">' + s.prodCount[s.topProducto] + ' unidades</div>' +
+        '<div class="est-modal-sub">producto más vendido del período</div>';
+      // Mostrar todas las ventas de este producto
+      var ventasProd = estFiltradas.filter(function(v) {
+        return (v.items || []).some(function(item) { return item.recetaNombre === s.topProducto; });
+      });
+      html += '<table><thead><tr><th>Fecha</th><th>Cantidad</th><th>Total</th></tr></thead><tbody>';
+      ventasProd.forEach(function(v) {
+        var items = (v.items || []).filter(function(i) { return i.recetaNombre === s.topProducto; });
+        var cant = items.reduce(function(sum, i) { return sum + i.cantidad; }, 0);
+        var subt = items.reduce(function(sum, i) { return sum + i.subtotal; }, 0);
+        html += '<tr><td>' + (v.fecha || "—") + '</td><td>' + cant + '</td><td>$' + subt.toFixed(0) + '</td></tr>';
+      });
+      html += '</tbody></table>';
+      break;
+
+    case "top-cliente":
+      if (!s.topCliente) { cerrarModalEst(); return; }
+      titulo.textContent = "👤 " + s.topCliente;
+      html = '<div class="est-modal-total">' + formatearDinero(s.clienteTotales[s.topCliente]) + '</div>' +
+        '<div class="est-modal-sub">total comprado en el período</div>';
+      // Compras de este cliente
+      var ventasCliente = estFiltradas.filter(function(v) { return v.clienteNombre === s.topCliente; });
+      html += '<table><thead><tr><th>Fecha</th><th>Productos</th><th>Total</th></tr></thead><tbody>';
+      ventasCliente.forEach(function(v) {
+        var prods = (v.items || []).map(function(i) { return i.cantidad + " × " + i.recetaNombre; }).join(", ");
+        if (prods.length > 40) prods = prods.substring(0, 37) + "…";
+        html += '<tr><td>' + (v.fecha || "—") + '</td><td>' + escHtml(prods) + '</td><td>$' + (v.total || 0).toFixed(0) + '</td></tr>';
+      });
+      html += '</tbody></table>';
+      break;
+  }
+
+  body.innerHTML = html;
+  overlay.classList.remove("hidden");
+}
+
+// ============================================================
+// LIMPIAR DATOS (ejecutar desde Consola F12)
+// ============================================================
+
+function limpiarColeccion(ref, nombre) {
+  if (!db) { alert("Firebase no está conectado."); return; }
+  if (!confirm("¿Eliminar TODOS los " + nombre + "? Esta acción no se puede deshacer.")) return;
+
+  ref.get().then(function(snapshot) {
+    if (snapshot.empty) { alert("No hay " + nombre + " para borrar."); return; }
+    var batch = db.batch();
+    snapshot.forEach(function(doc) { batch.delete(doc.ref); });
+    return batch.commit().then(function() {
+      alert("✅ " + nombre + " eliminados.");
+      location.reload();
+    });
+  }).catch(function(e) {
+    alert("Error al borrar " + nombre + ": " + e.message);
+  });
+}
+
+function limpiarIngredientes() { limpiarColeccion(ingredientesRef, "ingredientes"); }
+function limpiarRecetas() { limpiarColeccion(recetasRef, "recetas"); }
+function limpiarProduccion() { limpiarColeccion(produccionRef, "producciones"); }
+function limpiarClientes() { limpiarColeccion(clientesRef, "clientes"); }
+function limpiarVentas() { limpiarColeccion(ventasRef, "ventas"); }
+function limpiarTodosLosDatos() {
+  limpiarIngredientes();
+  limpiarRecetas();
+  limpiarProduccion();
+  limpiarClientes();
+  limpiarVentas();
+}
+
+function ayuda() {
+  console.log("");
+  console.log("  🧹 COMANDOS DISPONIBLES");
+  console.log("  ────────────────────────────");
+  console.log("  limpiarIngredientes()   → Borra solo ingredientes");
+  console.log("  limpiarRecetas()        → Borra solo recetas");
+  console.log("  limpiarProduccion()     → Borra solo producción");
+  console.log("  limpiarClientes()       → Borra solo clientes");
+  console.log("  limpiarVentas()         → Borra solo ventas");
+  console.log("  limpiarTodosLosDatos()  → Borra TODO");
+  console.log("  ────────────────────────────");
+  console.log("  Cada comando pide confirmación antes de borrar.");
+  console.log("");
+}
+
+// ============================================================
+// ERRORES
+// ============================================================
 
 // ============================================================
 // ERRORES

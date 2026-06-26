@@ -28,8 +28,8 @@
           <button class="tab active" data-tab="ingredientes">Ingredientes</button>
           <button class="tab" data-tab="recetas">Recetas</button>
           <button class="tab" data-tab="produccion">Producción</button>
-          <button class="tab" data-tab="historial">Historial</button>
           <button class="tab" data-tab="ventas">Ventas</button>
+          <button class="tab" data-tab="estadisticas">Estadísticas</button>
         </nav>
       </div>
       <button onclick="cerrarSesion()" class="btn-logout">Cerrar sesión</button>
@@ -274,14 +274,7 @@
         </form>
       </section>
 
-    </main>
-    </div>
-
-    <!-- ===== HISTORIAL ===== -->
-    <div id="seccion-historial" class="tab-panel">
-    <main>
-
-      <section id="historial-section">
+      <section id="historial-section" style="margin-top:32px">
         <h2>📊 Historial de producción</h2>
 
         <div class="historial-filtros">
@@ -467,6 +460,75 @@
         </div>
         <p id="sin-ventas" class="empty-msg">No hay ventas registradas.</p>
       </section>
+
+    </main>
+    </div>
+
+    <!-- ===== ESTADÍSTICAS ===== -->
+    <div id="seccion-estadisticas" class="tab-panel">
+    <main>
+
+      <section id="estadisticas-section" style="margin-top:0">
+        <h2>📊 Estadísticas de ventas</h2>
+
+        <div class="historial-filtros">
+          <button class="historial-btn est-periodo" data-periodo="today">Hoy</button>
+          <button class="historial-btn est-periodo" data-periodo="week">Semana</button>
+          <button class="historial-btn est-periodo" data-periodo="month">Mes</button>
+          <button class="historial-btn est-periodo" data-periodo="year">Año</button>
+          <button class="historial-btn est-periodo" data-periodo="all">Todo</button>
+        </div>
+
+        <div class="historial-resumen" id="est-resumen">
+          <div class="hist-card est-card">
+            <div class="hist-card-label" data-icon="🧾">Ventas</div>
+            <div class="hist-card-valor" id="est-count">0</div>
+          </div>
+          <div class="hist-card est-card">
+            <div class="hist-card-label" data-icon="💰">Total vendido</div>
+            <div class="hist-card-valor hist-verde" id="est-total">$0</div>
+          </div>
+          <div class="hist-card est-card">
+            <div class="hist-card-label" data-icon="📊">Promedio</div>
+            <div class="hist-card-valor" id="est-promedio">$0</div>
+          </div>
+          <div class="hist-card est-card">
+            <div class="hist-card-label" data-icon="🏆">Venta mayor</div>
+            <div class="hist-card-valor" id="est-max">$0</div>
+          </div>
+          <div class="hist-card est-card">
+            <div class="hist-card-label" data-icon="🥇">Más vendido</div>
+            <div class="hist-card-valor" id="est-top-producto">—</div>
+          </div>
+          <div class="hist-card est-card">
+            <div class="hist-card-label" data-icon="👤">Top cliente</div>
+            <div class="hist-card-valor" id="est-top-cliente">—</div>
+          </div>
+        </div>
+
+        <div id="est-grafica-container">
+          <canvas id="est-grafica"></canvas>
+        </div>
+
+        <h3 style="margin-top:24px;font-size:1.1rem">Por producto</h3>
+        <div id="est-por-producto"></div>
+
+        <h3 style="margin-top:24px;font-size:1.1rem">Por día de la semana</h3>
+        <div id="est-por-dia"></div>
+
+        <p id="sin-est" class="empty-msg">No hay ventas en este período.</p>
+      </section>
+
+      <!-- MODAL de detalle de cards -->
+      <div id="est-modal-overlay" class="est-modal-overlay hidden" onclick="cerrarModalEst()">
+        <div class="est-modal" onclick="event.stopPropagation()">
+          <div class="est-modal-header">
+            <span id="est-modal-titulo"></span>
+            <button class="est-modal-cerrar" onclick="cerrarModalEst()">✕</button>
+          </div>
+          <div id="est-modal-body"></div>
+        </div>
+      </div>
 
     </main>
     </div>

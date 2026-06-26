@@ -268,7 +268,7 @@ header h1 {
    ============================================================= */
 
 main {
-  max-width: 1100px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 32px 24px;
 }
@@ -287,14 +287,7 @@ main {
   border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-#form-section,
-#receta-form-section,
-#produccion-form-section,
-#ventas-section {
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
-}
+
 
 #form-section h2,
 #receta-form-section h2 {
@@ -1300,7 +1293,8 @@ td.unidad-col {
    15. HISTORIAL
    ============================================================= */
 
-#historial-section {
+#historial-section,
+#estadisticas-section {
   background: white;
   border-radius: 16px;
   padding: 32px;
@@ -1509,7 +1503,8 @@ th.sortable.sort-desc::after {
 }
 
 /* Gráfica */
-#historial-grafica-container {
+#historial-grafica-container,
+#est-grafica-container {
   margin-bottom: 20px;
   background: #faf8f5;
   border-radius: 12px;
@@ -1517,14 +1512,16 @@ th.sortable.sort-desc::after {
   padding: 16px;
 }
 
-#historial-grafica {
+#historial-grafica,
+#est-grafica {
   width: 100%;
   height: 200px;
   display: block;
 }
 
 @media (max-width: 600px) {
-  #historial-section {
+  #historial-section,
+  #estadisticas-section {
     padding: 20px 16px;
   }
 
@@ -1552,7 +1549,8 @@ th.sortable.sort-desc::after {
     gap: 4px;
   }
 
-  #historial-grafica {
+  #historial-grafica,
+  #est-grafica {
     height: 140px;
   }
 
@@ -1564,6 +1562,67 @@ th.sortable.sort-desc::after {
   .historial-paginacion button {
     padding: 6px 12px;
     font-size: 0.85rem;
+  }
+
+  /* ESTADÍSTICAS responsive */
+  .est-barras-h {
+    gap: 8px;
+  }
+
+  .est-bh-izq {
+    min-width: 80px;
+  }
+
+  .est-bh-nombre {
+    font-size: 0.85rem;
+  }
+
+  .est-bh-detalle {
+    font-size: 0.7rem;
+  }
+
+  .est-bh-pista {
+    height: 28px;
+  }
+
+  .est-bh-monto {
+    font-size: 0.75rem;
+    padding: 0 10px;
+  }
+
+  .est-semana {
+    gap: 4px;
+    min-height: 160px;
+  }
+
+  .est-semana-valor {
+    font-size: 0.7rem;
+  }
+
+  .est-semana-barra-wrap {
+    max-width: 28px;
+    min-height: 40px;
+  }
+
+  .est-semana-barra {
+    max-width: 24px;
+  }
+
+  .est-semana-nombre {
+    font-size: 0.7rem;
+  }
+
+  .est-semana-count {
+    font-size: 0.65rem;
+  }
+
+  .est-modal {
+    padding: 20px 16px;
+    max-height: 90vh;
+  }
+
+  .est-modal-body .est-modal-total {
+    font-size: 1.5rem;
   }
 }
 
@@ -1584,9 +1643,6 @@ th.sortable.sort-desc::after {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
   margin-bottom: 28px;
   border: 1px solid rgba(0, 0, 0, 0.04);
-  max-width: 850px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 #clientes-section h2,
@@ -1780,6 +1836,284 @@ th.sortable.sort-desc::after {
   .venta-total strong {
     font-size: 1.3rem;
   }
+}
+
+/* =============================================================
+   17. ESTADÍSTICAS
+   ============================================================= */
+
+/* Cards con ícono */
+.est-card .hist-card-label::before {
+  content: attr(data-icon);
+  font-size: 1.2rem;
+  margin-right: 6px;
+  display: inline-block;
+}
+
+.est-card .hist-card-valor {
+  font-size: 1.7rem;
+}
+
+/* ============================================================
+   GRÁFICO DE BARRAS HORIZONTAL (Por producto)
+   ============================================================ */
+
+.est-barras-h {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.est-bh-fila {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  animation: est-fade-slide 0.45s ease both;
+}
+
+@keyframes est-fade-slide {
+  from { opacity: 0; transform: translateX(-14px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.est-bh-izq {
+  min-width: 150px;
+  flex-shrink: 0;
+}
+
+.est-bh-nombre {
+  display: block;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #111827;
+  line-height: 1.3;
+}
+
+.est-bh-detalle {
+  display: block;
+  font-size: 0.78rem;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+.est-bh-pista {
+  flex: 1;
+  height: 32px;
+  background: #f3f4f6;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.est-bh-barra {
+  height: 100%;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 12px;
+  min-width: 50px;
+  background: #d97706;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.est-bh-monto {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   SEMANA VISUAL (Por día de la semana)
+   ============================================================ */
+
+.est-semana {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding: 16px 0;
+  min-height: 220px;
+}
+
+.est-semana-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  animation: est-semana-in 0.45s ease both;
+}
+
+@keyframes est-semana-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.est-semana-valor {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.est-semana-barra-wrap {
+  flex: 1;
+  width: 100%;
+  max-width: 44px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 60px;
+}
+
+.est-semana-barra {
+  width: 100%;
+  max-width: 36px;
+  border-radius: 6px 6px 0 0;
+  min-height: 3px;
+  background: linear-gradient(180deg, #d97706, #f59e0b);
+  transition: height 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.est-semana-nombre {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.est-semana-count {
+  font-size: 0.7rem;
+  color: #9ca3af;
+}
+
+/* Gráfica responsive */
+#est-grafica {
+  width: 100%;
+  display: block;
+}
+
+/* ============================================================
+   MODAL DE DETALLE (Estadísticas)
+   ============================================================ */
+
+.est-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.est-modal {
+  background: white;
+  border-radius: 20px;
+  padding: 28px 32px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: est-modal-in 0.25s ease;
+}
+
+@keyframes est-modal-in {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.est-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.est-modal-header span {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.est-modal-cerrar {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #9ca3af;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.est-modal-cerrar:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.est-modal-body {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.est-modal-body table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.est-modal-body th {
+  text-align: left;
+  padding: 8px 6px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9ca3af;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.est-modal-body td {
+  padding: 8px 6px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.est-modal-body .est-modal-total {
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: center;
+  padding: 16px 0;
+  color: #111827;
+}
+
+.est-modal-body .est-modal-sub {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  margin-top: -8px;
+  margin-bottom: 16px;
+}
+
+/* Card clickeable */
+.est-card {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  position: relative;
+}
+
+.est-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border-color: #d1d5db;
+}
+
+.est-card:active {
+  transform: translateY(-1px);
 }
 
 /* Pantallas muy grandes: ocupar todo el ancho */
