@@ -1445,6 +1445,25 @@ th.sortable.sort-desc::after {
   color: white;
 }
 
+.btn-hist-eliminar {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: #fee2e2;
+  color: #dc2626;
+  margin-left: 4px;
+}
+
+.btn-hist-eliminar:hover {
+  background-color: #dc2626;
+  color: white;
+}
+
 /* Paginación */
 .historial-paginacion {
   display: flex;

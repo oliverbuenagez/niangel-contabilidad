@@ -1226,7 +1226,7 @@ function actualizarHistorial() {
       '<td class="hist-verde">$' + p.ingreso.toFixed(0) + '</td>' +
       '<td class="' + margenClase + '">$' + p.ganancia.toFixed(0) + '</td>' +
       '<td>' + (p.margen || 0).toFixed(1) + '%</td>' +
-      '<td><button class="btn-hist-editar" data-editar-id="' + p.id + '">Editar</button></td>' +
+      '<td><button class="btn-hist-editar" data-editar-id="' + p.id + '">Editar</button> <button class="btn-hist-eliminar" data-eliminar-id="' + p.id + '">Eliminar</button></td>' +
       '</tr>';
   });
 
@@ -1306,7 +1306,19 @@ document.addEventListener("click", function(e) {
   // Editar producción
   var editar = e.target.closest("[data-editar-id]");
   if (editar) editarProduccion(editar.dataset.editarId);
+
+  // Eliminar producción
+  var eliminar = e.target.closest("[data-eliminar-id]");
+  if (eliminar) eliminarProduccion(eliminar.dataset.eliminarId);
 });
+
+function eliminarProduccion(id) {
+  if (!confirm("¿Estás seguro de eliminar esta producción?")) return;
+  if (!produccionRef) { mostrarError("Firebase no está conectado."); return; }
+  produccionRef.doc(id).delete().catch(function(error) {
+    mostrarError("Error al eliminar producción: " + error.message);
+  });
+}
 
 // ============================================================
 // ERRORES
