@@ -268,7 +268,7 @@ header h1 {
    ============================================================= */
 
 main {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 32px 24px;
 }
@@ -283,9 +283,8 @@ main {
   border-radius: 16px;
   padding: 32px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
-  margin: 0 auto 28px;
+  margin-bottom: 28px;
   border: 1px solid rgba(0, 0, 0, 0.04);
-  max-width: 720px;
 }
 
 #form-section h2,
@@ -1093,9 +1092,8 @@ td.unidad-col {
   border-radius: 16px;
   padding: 32px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
-  margin: 0 auto 28px;
+  margin-bottom: 28px;
   border: 1px solid rgba(0, 0, 0, 0.04);
-  max-width: 720px;
 }
 
 #produccion-form-section h2 {
@@ -1579,9 +1577,8 @@ th.sortable.sort-desc::after {
   border-radius: 16px;
   padding: 32px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
-  margin: 0 auto 28px;
+  margin-bottom: 28px;
   border: 1px solid rgba(0, 0, 0, 0.04);
-  max-width: 860px;
 }
 
 #clientes-section h2,
@@ -1603,7 +1600,6 @@ th.sortable.sort-desc::after {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
   margin-bottom: 28px;
   border: 1px solid rgba(0, 0, 0, 0.04);
-  max-width: 720px;
 }
 
 #ventas-list-section {
