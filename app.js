@@ -33,7 +33,7 @@ function verificarPin() {
     document.getElementById("pin-input").value = "";
     inicializarFirebase();
   } else {
-    alert("PIN incorrecto. Intenta de nuevo.");
+    mostrarToast("PIN incorrecto. Intenta de nuevo.", "error");
     document.getElementById("pin-input").value = "";
     document.getElementById("pin-input").focus();
   }
@@ -385,7 +385,7 @@ function guardarIngrediente(evento) {
   const cantidad = parseFloat(document.getElementById("cantidad-input").value);
 
   if (!nombre || isNaN(precio) || !unidad || isNaN(cantidad) || precio < 0 || cantidad < 0) {
-    alert("Todos los campos son obligatorios y deben ser válidos.");
+    mostrarToast("Todos los campos son obligatorios y deben ser válidos.", "warning");
     return;
   }
 
@@ -524,10 +524,10 @@ function guardarReceta(evento) {
   if (!recetasRef) { mostrarError("Firebase no está conectado."); return; }
 
   const nombre = document.getElementById("receta-nombre-input").value.trim();
-  if (!nombre) { alert("El nombre de la receta es obligatorio."); return; }
+  if (!nombre) { mostrarToast("El nombre de la receta es obligatorio.", "warning"); return; }
 
   const rows = document.querySelectorAll("#receta-ingredientes-container .receta-ingr-row");
-  if (rows.length === 0) { alert("Agrega al menos un ingrediente a la receta."); return; }
+  if (rows.length === 0) { mostrarToast("Agrega al menos un ingrediente a la receta.", "warning"); return; }
 
   const ingredientes = [];
   let algunValido = false;
@@ -547,7 +547,7 @@ function guardarReceta(evento) {
     algunValido = true;
   });
 
-  if (!algunValido) { alert("Completa todos los ingredientes con valores válidos."); return; }
+  if (!algunValido) { mostrarToast("Completa todos los ingredientes con valores válidos.", "warning"); return; }
 
   const costoAdicional = parseFloat(document.getElementById("receta-costo-adicional").value) || 0;
   const rinde = parseInt(document.getElementById("receta-rinde").value) || 0;
@@ -614,9 +614,13 @@ function renderRecetas() {
     let extraInfo = "";
     if (receta.rinde && receta.precioVenta) {
       const ingresoPorTanda = receta.rinde * receta.precioVenta;
+      const costPerPan = total / receta.rinde;
+      const profitPerPan = receta.precioVenta - costPerPan;
       extraInfo = `
         <div class="receta-extra-info">
           <span>${receta.harinaTanda ? receta.harinaTanda + 'g' : '—'} · ${receta.rinde} panes · $${receta.precioVenta}/pan</span>
+          <span>Costo/pan: $${costPerPan.toFixed(0)}</span>
+          <span>Ganancia/pan: $${profitPerPan.toFixed(0)}</span>
           <span class="receta-extra-ganancia">$${ingresoPorTanda.toFixed(0)}/tanda</span>
         </div>
       `;
@@ -798,8 +802,7 @@ function calcularProduccion() {
     if (cantEscalada >= 1000 && ing.unidad === "g") {
       cantDisplay = (cantEscalada / 1000).toFixed(2);
       unidDisplay = "kg";
-    }
-    if (cantEscalada >= 500 && ing.unidad === "g") {
+    } else if (cantEscalada >= 500 && ing.unidad === "g") {
       cantDisplay = (cantEscalada / 500).toFixed(2);
       unidDisplay = "lb";
     }
@@ -884,14 +887,14 @@ function guardarProduccion(evento) {
   if (!produccionRef) { mostrarError("Firebase no está conectado."); return; }
 
   const recetaId = document.getElementById("produccion-receta-select").value;
-  if (!recetaId) { alert("Selecciona una receta."); return; }
+  if (!recetaId) { mostrarToast("Selecciona una receta.", "warning"); return; }
 
   const receta = recetasData.find(function(r) { return r.id === recetaId; });
   if (!receta) return;
 
   const cantidad = parseFloat(document.getElementById("produccion-cantidad").value);
   const unidad = document.getElementById("produccion-unidad").value;
-  if (isNaN(cantidad) || cantidad <= 0) { alert("Ingresa una cantidad válida."); return; }
+  if (isNaN(cantidad) || cantidad <= 0) { mostrarToast("Ingresa una cantidad válida.", "warning"); return; }
 
   let gramosProducir = 0;
   let multiplicador = 0;
@@ -952,7 +955,7 @@ function guardarProduccion(evento) {
       margen: margen
     }).catch(function(error) { mostrarError("Error al actualizar producción: " + error.message); });
 
-    alert("✅ Producción actualizada: " + panesProducidos + " panes · Ganancia: $" + ganancia.toFixed(2));
+    mostrarToast("Producción actualizada: " + panesProducidos + " panes · Ganancia: $" + ganancia.toFixed(2), "success");
     cancelarEditarProduccion();
   } else {
     // Nueva producción
@@ -984,7 +987,7 @@ function guardarProduccion(evento) {
     document.getElementById("produccion-info").classList.add("hidden");
     document.getElementById("produccion-resumen").classList.add("hidden");
 
-    alert("✅ Producción guardada: " + panesProducidos + " panes · Ganancia: $" + ganancia.toFixed(2));
+    mostrarToast("Producción guardada: " + panesProducidos + " panes · Ganancia: $" + ganancia.toFixed(2), "success");
   }
 }
 
@@ -1002,11 +1005,14 @@ function configurarListenerProducciones() {
         id: doc.id,
         fecha: d.fecha,
         recetaNombre: d.recetaNombre,
+        recetaId: d.recetaId,
         cantidadProducida: d.cantidadProducida,
         unidadProduccion: d.unidadProduccion,
         panesProducidos: d.panesProducidos || 0,
         costoIngredientes: d.costoIngredientes || 0,
         costoAdicional: d.costoAdicional || 0,
+        costoAdicionalReceta: d.costoAdicionalReceta || 0,
+        costoAdicionalExtra: d.costoAdicionalExtra || 0,
         costoTotal: d.costoTotal || 0,
         ingreso: d.ingreso || 0,
         ganancia: d.ganancia || 0,
@@ -1054,9 +1060,8 @@ function filtrarProducciones(producciones, periodo) {
 
   return producciones.filter(function(p) {
     if (!p.fecha) return false;
-    // Parsear YYYY-MM-DD como fecha local (no UTC)
-    var parts = p.fecha.split("-");
-    var f = parts.length === 3 ? new Date(+parts[0], +parts[1] - 1, +parts[2]) : new Date(p.fecha);
+    var f = new Date(p.fecha);
+    if (isNaN(f.getTime())) return false;
     return f >= inicio && f <= ahora;
   });
 }
@@ -1416,7 +1421,7 @@ function guardarCliente(evento) {
   if (!clientesRef) { mostrarError("Firebase no está conectado."); return; }
 
   var nombre = document.getElementById("cliente-nombre-input").value.trim();
-  if (!nombre) { alert("Ingresa el nombre del cliente."); return; }
+  if (!nombre) { mostrarToast("Ingresa el nombre del cliente.", "warning"); return; }
 
   var data = {
     nombre: nombre,
@@ -1575,7 +1580,7 @@ function guardarVenta(evento) {
     });
   });
 
-  if (items.length === 0) { alert("Agrega al menos un producto a la venta."); return; }
+  if (items.length === 0) { mostrarToast("Agrega al menos un producto a la venta.", "warning"); return; }
 
   var total = items.reduce(function(s, i) { return s + i.subtotal; }, 0);
   var clienteSelect = document.getElementById("venta-cliente-select");
@@ -1595,14 +1600,14 @@ function guardarVenta(evento) {
     ventasRef.doc(ventaEditandoId).update(data).catch(function(e) {
       mostrarError("Error al actualizar venta: " + e.message);
     });
-    alert("✅ Venta actualizada: $" + total.toFixed(2));
+    mostrarToast("Venta actualizada: $" + total.toFixed(2), "success");
     cancelarEditarVenta();
   } else {
     ventasRef.add(data).catch(function(e) {
       mostrarError("Error al guardar venta: " + e.message);
     });
     limpiarFormVenta();
-    alert("✅ Venta guardada: $" + total.toFixed(2));
+    mostrarToast("Venta guardada: $" + total.toFixed(2), "success");
   }
 }
 
@@ -1822,11 +1827,18 @@ function renderEstadisticas() {
     b.classList.toggle("active", b.dataset.periodo === estPeriodo);
   });
 
-  estFiltradas = filtrarProducciones(ventasData, estPeriodo);
+  var ventasFiltradas = filtrarProducciones(ventasData, estPeriodo);
+  var prodFiltradas = filtrarProducciones(produccionesData, estPeriodo);
+  estFiltradas = ventasFiltradas;
   var emptyMsg = document.getElementById("sin-est");
 
-  if (estFiltradas.length === 0) {
+  var hayVentas = ventasFiltradas.length > 0;
+  var hayProduccion = prodFiltradas.length > 0;
+
+  if (!hayVentas && !hayProduccion) {
     document.getElementById("est-resumen").classList.add("hidden");
+    document.getElementById("est-prod-resumen").classList.add("hidden");
+    document.getElementById("est-financiero-resumen").classList.add("hidden");
     document.getElementById("est-grafica-container").style.display = "none";
     document.getElementById("est-por-producto").innerHTML = "";
     document.getElementById("est-por-dia").innerHTML = "";
@@ -1834,61 +1846,106 @@ function renderEstadisticas() {
     return;
   }
   emptyMsg.classList.add("hidden");
-  document.getElementById("est-resumen").classList.remove("hidden");
   document.getElementById("est-grafica-container").style.display = "";
 
-  // Cards resumen
-  var total = 0, maxVenta = 0, maxVentaId = null;
-  var prodCount = {};
-  var clienteTotales = {};
-  estFiltradas.forEach(function(v) {
-    total += v.total || 0;
-    if ((v.total || 0) > maxVenta) {
-      maxVenta = v.total;
-      maxVentaId = v.id;
-    }
-    (v.items || []).forEach(function(item) {
-      prodCount[item.recetaNombre] = (prodCount[item.recetaNombre] || 0) + item.cantidad;
+  // ===== VENTAS =====
+  document.getElementById("est-resumen").classList.toggle("hidden", !hayVentas);
+  if (hayVentas) {
+    var total = 0, maxVenta = 0, maxVentaId = null;
+    var prodCount = {};
+    var clienteTotales = {};
+    ventasFiltradas.forEach(function(v) {
+      total += v.total || 0;
+      if ((v.total || 0) > maxVenta) {
+        maxVenta = v.total;
+        maxVentaId = v.id;
+      }
+      (v.items || []).forEach(function(item) {
+        prodCount[item.recetaNombre] = (prodCount[item.recetaNombre] || 0) + item.cantidad;
+      });
+      if (v.clienteNombre) {
+        clienteTotales[v.clienteNombre] = (clienteTotales[v.clienteNombre] || 0) + (v.total || 0);
+      }
     });
-    if (v.clienteNombre) {
-      clienteTotales[v.clienteNombre] = (clienteTotales[v.clienteNombre] || 0) + (v.total || 0);
-    }
-  });
-  var promedio = total / estFiltradas.length;
+    var promedio = total / ventasFiltradas.length;
 
-  var topProducto = Object.keys(prodCount).length
-    ? Object.keys(prodCount).reduce(function(a, b) { return prodCount[a] > prodCount[b] ? a : b; })
-    : null;
-  var topCliente = Object.keys(clienteTotales).length
-    ? Object.keys(clienteTotales).reduce(function(a, b) { return clienteTotales[a] > clienteTotales[b] ? a : b; })
-    : null;
+    var topProducto = Object.keys(prodCount).length
+      ? Object.keys(prodCount).reduce(function(a, b) { return prodCount[a] > prodCount[b] ? a : b; })
+      : null;
+    var topCliente = Object.keys(clienteTotales).length
+      ? Object.keys(clienteTotales).reduce(function(a, b) { return clienteTotales[a] > clienteTotales[b] ? a : b; })
+      : null;
 
-  estStats = {
-    total: total,
-    maxVenta: maxVenta,
-    maxVentaId: maxVentaId,
-    promedio: promedio,
-    prodCount: prodCount,
-    topProducto: topProducto,
-    clienteTotales: clienteTotales,
-    topCliente: topCliente
-  };
+    estStats = {
+      total: total,
+      maxVenta: maxVenta,
+      maxVentaId: maxVentaId,
+      promedio: promedio,
+      prodCount: prodCount,
+      topProducto: topProducto,
+      clienteTotales: clienteTotales,
+      topCliente: topCliente
+    };
 
-  document.getElementById("est-count").textContent = estFiltradas.length;
-  document.getElementById("est-total").textContent = "$" + total.toFixed(0);
-  document.getElementById("est-promedio").textContent = "$" + promedio.toFixed(0);
-  document.getElementById("est-max").textContent = "$" + maxVenta.toFixed(0);
-  document.getElementById("est-top-producto").textContent = topProducto || "—";
-  document.getElementById("est-top-cliente").textContent = topCliente || "—";
+    document.getElementById("est-count").textContent = ventasFiltradas.length;
+    document.getElementById("est-total").textContent = "$" + total.toFixed(0);
+    document.getElementById("est-promedio").textContent = "$" + promedio.toFixed(0);
+    document.getElementById("est-max").textContent = "$" + maxVenta.toFixed(0);
+    document.getElementById("est-top-producto").textContent = topProducto || "—";
+    document.getElementById("est-top-cliente").textContent = topCliente || "—";
+  }
+
+  // ===== PRODUCCIÓN =====
+  document.getElementById("est-prod-resumen").classList.toggle("hidden", !hayProduccion);
+  if (hayProduccion) {
+    var prodCountTotal = prodFiltradas.length;
+    var prodInversion = 0, prodGastos = 0, prodCostoTotal = 0;
+    var prodIngreso = 0, prodGanancia = 0;
+
+    prodFiltradas.forEach(function(p) {
+      prodInversion += p.costoIngredientes || 0;
+      prodGastos += p.costoAdicional || 0;
+      prodCostoTotal += p.costoTotal || 0;
+      prodIngreso += p.ingreso || 0;
+      prodGanancia += p.ganancia || 0;
+    });
+
+    document.getElementById("est-prod-count").textContent = prodCountTotal;
+    document.getElementById("est-prod-inversion").textContent = "$" + prodInversion.toFixed(0);
+    document.getElementById("est-prod-gastos").textContent = "$" + prodGastos.toFixed(0);
+    document.getElementById("est-prod-costo").textContent = "$" + prodCostoTotal.toFixed(0);
+    document.getElementById("est-prod-ingreso").textContent = "$" + prodIngreso.toFixed(0);
+    var prodGananciaEl = document.getElementById("est-prod-ganancia");
+    prodGananciaEl.textContent = "$" + prodGanancia.toFixed(0);
+    prodGananciaEl.className = "hist-card-valor " + (prodGanancia >= 0 ? "hist-verde" : "hist-rojo");
+  }
+
+  // ===== RESUMEN FINANCIERO =====
+  document.getElementById("est-financiero-resumen").classList.toggle("hidden", !hayProduccion && !hayVentas);
+  if (hayProduccion || hayVentas) {
+    var ingresoReal = hayVentas ? ventasFiltradas.reduce(function(s, v) { return s + (v.total || 0); }, 0) : 0;
+    var costoProd = hayProduccion ? prodFiltradas.reduce(function(s, p) { return s + (p.costoTotal || 0); }, 0) : 0;
+    var gananciaNeta = ingresoReal - costoProd;
+    var margenNeto = ingresoReal > 0 ? (gananciaNeta / ingresoReal) * 100 : 0;
+
+    document.getElementById("est-fin-ingreso").textContent = "$" + ingresoReal.toFixed(0);
+    document.getElementById("est-fin-costo").textContent = "$" + costoProd.toFixed(0);
+
+    var gananciaNetaEl = document.getElementById("est-fin-ganancia");
+    gananciaNetaEl.textContent = "$" + gananciaNeta.toFixed(0);
+    gananciaNetaEl.className = "hist-card-valor " + (gananciaNeta >= 0 ? "hist-verde" : "hist-rojo");
+
+    document.getElementById("est-fin-margen").textContent = margenNeto.toFixed(1) + "%";
+  }
 
   // Gráfica de barras (ventas totales por día)
-  dibujarGraficaEst(estFiltradas);
+  dibujarGraficaEst(ventasFiltradas);
 
   // Por producto
-  renderEstPorProducto(estFiltradas);
+  renderEstPorProducto(ventasFiltradas);
 
   // Por día de la semana
-  renderEstPorDia(estFiltradas);
+  renderEstPorDia(ventasFiltradas);
 }
 
 function renderEstPorProducto(ventas) {
@@ -2270,19 +2327,19 @@ function mostrarDetalleCard(tipo) {
 // ============================================================
 
 function limpiarColeccion(ref, nombre) {
-  if (!db) { alert("Firebase no está conectado."); return; }
+  if (!db) { mostrarToast("Firebase no está conectado.", "error"); return; }
   if (!confirm("¿Eliminar TODOS los " + nombre + "? Esta acción no se puede deshacer.")) return;
 
   ref.get().then(function(snapshot) {
-    if (snapshot.empty) { alert("No hay " + nombre + " para borrar."); return; }
+    if (snapshot.empty) { mostrarToast("No hay " + nombre + " para borrar.", "info"); return; }
     var batch = db.batch();
     snapshot.forEach(function(doc) { batch.delete(doc.ref); });
     return batch.commit().then(function() {
-      alert("✅ " + nombre + " eliminados.");
+      mostrarToast(nombre + " eliminados.", "success");
       location.reload();
     });
   }).catch(function(e) {
-    alert("Error al borrar " + nombre + ": " + e.message);
+    mostrarToast("Error al borrar " + nombre + ": " + e.message, "error");
   });
 }
 
@@ -2315,8 +2372,20 @@ function ayuda() {
 }
 
 // ============================================================
-// ERRORES
+// TOAST
 // ============================================================
+
+function mostrarToast(mensaje, tipo) {
+  tipo = tipo || "info";
+  var container = document.getElementById("toast-container");
+  var el = document.createElement("div");
+  el.className = "toast toast-" + tipo;
+  el.textContent = mensaje;
+  container.appendChild(el);
+  setTimeout(function() {
+    if (el.parentNode) el.parentNode.removeChild(el);
+  }, 3000);
+}
 
 // ============================================================
 // ERRORES
