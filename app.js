@@ -222,8 +222,11 @@ function convertirAGramos(cantidad, unidad) {
   }
 }
 
+var UMBRAL_MAX = 1e12;
+
 function sanitizarNumero(val) {
   if (typeof val !== "number" || !isFinite(val)) return 0;
+  if (Math.abs(val) > UMBRAL_MAX) return 0;
   return val;
 }
 
@@ -257,7 +260,8 @@ function calcularCostoIngrediente(ingredienteId, cantidad, unidad) {
   const gramosBase = convertirAGramos(base.cantidad, base.unidad);
 
   if (gramosBase === 0 || gramosUsados === 0) return 0;
-  return (base.precio / gramosBase) * gramosUsados;
+  if (!isFinite(gramosBase) || !isFinite(gramosUsados)) return 0;
+  return sanitizarNumero((base.precio / gramosBase) * gramosUsados);
 }
 
 // ============================================================
@@ -834,11 +838,11 @@ function calcularProduccion() {
   const costoAdicionalReceta = sanitizarNumero((receta.costoAdicional || 0) * multiplicador);
   const costoAdicionalExtra = sanitizarNumero(parseFloat(document.getElementById("produccion-costo-adicional").value) || 0);
   const costoAdicionalTotal = costoAdicionalReceta + costoAdicionalExtra;
-  const panesProducidos = Math.round(multiplicador * receta.rinde);
+  const panesProducidos = Math.round(sanitizarNumero(multiplicador * receta.rinde));
   const ingreso = sanitizarNumero(panesProducidos * receta.precioVenta);
   const costoTotal = sanitizarNumero(totalCosto + costoAdicionalTotal);
-  const ganancia = ingreso - costoTotal;
-  const margen = ingreso > 0 ? (ganancia / ingreso) * 100 : 0;
+  const ganancia = sanitizarNumero(ingreso - costoTotal);
+  const margen = sanitizarNumero(ingreso > 0 ? (ganancia / ingreso) * 100 : 0);
 
   document.getElementById("prod-costo-ingredientes").textContent = "$" + totalCosto.toFixed(2);
   document.getElementById("prod-costo-adicional-label").textContent = "$" + costoAdicionalTotal.toFixed(2);
@@ -934,14 +938,15 @@ function guardarProduccion(evento) {
   const costoAdicionalExtra = sanitizarNumero(parseFloat(document.getElementById("produccion-costo-adicional").value) || 0);
   const costoAdicionalTotal = costoAdicionalReceta + costoAdicionalExtra;
   const totalIngredientes = sanitizarNumero(ingredientes.reduce(function(s, i) { return s + i.costo; }, 0));
-  const costoTotal = totalIngredientes + costoAdicionalTotal;
-  const panesProducidos = Math.round(multiplicador * receta.rinde);
+  const costoTotal = sanitizarNumero(totalIngredientes + costoAdicionalTotal);
+  const panesProducidos = Math.round(sanitizarNumero(multiplicador * receta.rinde));
   const ingreso = sanitizarNumero(panesProducidos * receta.precioVenta);
-  const ganancia = ingreso - costoTotal;
-  const margen = ingreso > 0 ? (ganancia / ingreso) * 100 : 0;
+  const ganancia = sanitizarNumero(ingreso - costoTotal);
+  const margen = sanitizarNumero(ingreso > 0 ? (ganancia / ingreso) * 100 : 0);
+  var gramosRedondeados = Math.round(sanitizarNumero(gramosProducir));
 
-  if (!isFinite(costoTotal) || !isFinite(ganancia)) {
-    mostrarToast("Error: valores inválidos. Revisa la receta y los ingredientes.", "error");
+  if (panesProducidos <= 0) {
+    mostrarToast("Error: la producción no produce panes. Revisa la receta.", "error");
     return;
   }
 
@@ -956,7 +961,7 @@ function guardarProduccion(evento) {
       cantidadProducida: cantidad,
       unidadProduccion: unidad,
       multiplicador: multiplicador,
-      gramosProducidos: Math.round(gramosProducir),
+      gramosProducidos: gramosRedondeados,
       ingredientes: ingredientes,
       costoAdicionalReceta: costoAdicionalReceta,
       costoAdicionalExtra: costoAdicionalExtra,
@@ -981,7 +986,7 @@ function guardarProduccion(evento) {
       cantidadProducida: cantidad,
       unidadProduccion: unidad,
       multiplicador: multiplicador,
-      gramosProducidos: Math.round(gramosProducir),
+      gramosProducidos: gramosRedondeados,
       ingredientes: ingredientes,
       costoAdicionalReceta: costoAdicionalReceta,
       costoAdicionalExtra: costoAdicionalExtra,
@@ -1010,6 +1015,14 @@ function guardarProduccion(evento) {
 // HISTORIAL
 // ============================================================
 
+function esCorrupto(d) {
+  var campos = ["panesProducidos", "costoIngredientes", "costoAdicional", "costoAdicionalReceta", "costoAdicionalExtra", "costoTotal", "ingreso", "ganancia", "margen"];
+  return campos.some(function(c) {
+    var v = d[c];
+    return v != null && sanitizarNumero(v) !== v;
+  });
+}
+
 function configurarListenerProducciones() {
   produccionRef.orderBy("fecha", "desc").onSnapshot(function(snapshot) {
     if (sessionStorage.getItem("autenticado") !== "true") return;
@@ -1017,29 +1030,28 @@ function configurarListenerProducciones() {
     var hayCorruptos = false;
     snapshot.forEach(function(doc) {
       const d = doc.data();
-      var prod = {
+      var corrupto = esCorrupto(d);
+      if (corrupto) hayCorruptos = true;
+      produccionesData.push({
         id: doc.id,
         fecha: d.fecha,
         recetaNombre: d.recetaNombre,
         recetaId: d.recetaId,
         cantidadProducida: d.cantidadProducida,
         unidadProduccion: d.unidadProduccion,
-        panesProducidos: sanitizarNumero(d.panesProducidos),
-        costoIngredientes: sanitizarNumero(d.costoIngredientes),
-        costoAdicional: sanitizarNumero(d.costoAdicional),
-        costoAdicionalReceta: sanitizarNumero(d.costoAdicionalReceta),
-        costoAdicionalExtra: sanitizarNumero(d.costoAdicionalExtra),
-        costoTotal: sanitizarNumero(d.costoTotal),
-        ingreso: sanitizarNumero(d.ingreso),
-        ganancia: sanitizarNumero(d.ganancia),
-        margen: sanitizarNumero(d.margen)
-      };
-      if (d.panesProducidos != null && sanitizarNumero(d.panesProducidos) !== d.panesProducidos) hayCorruptos = true;
-      if (d.costoTotal != null && sanitizarNumero(d.costoTotal) !== d.costoTotal) hayCorruptos = true;
-      produccionesData.push(prod);
+        panesProducidos: corrupto ? 0 : sanitizarNumero(d.panesProducidos),
+        costoIngredientes: corrupto ? 0 : sanitizarNumero(d.costoIngredientes),
+        costoAdicional: corrupto ? 0 : sanitizarNumero(d.costoAdicional),
+        costoAdicionalReceta: corrupto ? 0 : sanitizarNumero(d.costoAdicionalReceta),
+        costoAdicionalExtra: corrupto ? 0 : sanitizarNumero(d.costoAdicionalExtra),
+        costoTotal: corrupto ? 0 : sanitizarNumero(d.costoTotal),
+        ingreso: corrupto ? 0 : sanitizarNumero(d.ingreso),
+        ganancia: corrupto ? 0 : sanitizarNumero(d.ganancia),
+        margen: corrupto ? 0 : sanitizarNumero(d.margen)
+      });
     });
     if (hayCorruptos) {
-      mostrarToast("Se detectaron producciones con datos corruptos. Revisa el historial y elimínalas.", "warning");
+      mostrarToast("Se detectaron producciones con datos corruptos (costos enormes). Revisa el historial y elimínalas.", "warning");
     }
     actualizarHistorial();
   }, function(error) {
