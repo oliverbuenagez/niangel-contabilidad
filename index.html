@@ -3,7 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Control de Ingredientes - Panadería</title>
+  <title>NIANGEL Control de Ingredientes y Producción | Panadería en Bucaramanga</title>
+  <meta name="description" content="Sistema de control de ingredientes y producción para panadería. Gestiona inventario, recetas, producción y ventas en Bucaramanga, Colombia." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://niangel-contabilidad.web.app/" />
+  <link rel="preconnect" href="https://www.gstatic.com" />
+  <link rel="preconnect" href="https://firestore.googleapis.com" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="apple-touch-icon" href="favicon.svg" />
+  <meta name="theme-color" content="#d97706" />
+  <meta property="og:title" content="NIANGEL Control de Ingredientes y Producción | Panadería en Bucaramanga" />
+  <meta property="og:description" content="Sistema de control de ingredientes y producción para panadería. Gestiona inventario, recetas, producción y ventas en Bucaramanga, Colombia." />
+  <meta property="og:url" content="https://niangel-contabilidad.web.app/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "NIANGEL Panadería",
+    "description": "Control de ingredientes y producción para panadería en Bucaramanga, Colombia.",
+    "url": "https://niangel-contabilidad.web.app/",
+    "areaServed": "Bucaramanga, Colombia"
+  }
+  </script>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -211,6 +234,11 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label for="produccion-fecha">Fecha de producción</label>
+            <input type="date" id="produccion-fecha" />
+          </div>
+
           <div id="produccion-info" class="produccion-info hidden">
             <div class="prod-info-row">
               <span>Harina por tanda:</span>
@@ -243,10 +271,6 @@
             <div class="prod-res-row">
               <span>Inversión ingredientes:</span>
               <strong id="prod-costo-ingredientes">$0</strong>
-            </div>
-            <div class="prod-res-row">
-              <span>Costo adicional:</span>
-              <strong id="prod-costo-adicional-label">$0</strong>
             </div>
             <div class="prod-res-divider"></div>
             <div class="prod-res-row prod-res-total">
@@ -519,10 +543,6 @@
           <div class="hist-card est-card">
             <div class="hist-card-label" data-icon="🛒">Inversión</div>
             <div class="hist-card-valor hist-rojo" id="est-prod-inversion">$0</div>
-          </div>
-          <div class="hist-card est-card">
-            <div class="hist-card-label" data-icon="💸">Gastos adic.</div>
-            <div class="hist-card-valor hist-rojo" id="est-prod-gastos">$0</div>
           </div>
           <div class="hist-card est-card">
             <div class="hist-card-label" data-icon="📋">Costo total</div>

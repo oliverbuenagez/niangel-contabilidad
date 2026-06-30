@@ -1036,13 +1036,15 @@ td.unidad-col {
     flex: 1;
     text-align: center;
     font-size: 0.9rem;
-    padding: 8px 8px;
+    padding: 12px 8px;
+    min-height: 44px;
   }
 
   .btn-logout {
     align-self: flex-end;
     font-size: 0.85rem;
-    padding: 8px 16px;
+    padding: 12px 16px;
+    min-height: 44px;
   }
 
   main {
@@ -1099,6 +1101,11 @@ td.unidad-col {
   thead th,
   tbody td {
     padding: 10px 6px;
+  }
+
+  td.acciones .btn-editar,
+  td.acciones .btn-eliminar {
+    min-height: 44px;
   }
 
   thead th {
@@ -1161,6 +1168,207 @@ td.unidad-col {
 
   .login-box {
     padding: 36px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .tab {
+    flex: none;
+    font-size: 0.82rem;
+    padding: 10px 10px;
+    white-space: nowrap;
+    min-height: 44px;
+  }
+  .tab:first-child {
+    margin-left: auto;
+  }
+  .tab:last-child {
+    margin-right: auto;
+  }
+
+  header h1 {
+    font-size: 1.05rem;
+  }
+
+  .resumen-card {
+    min-width: 100%;
+    padding: 14px;
+  }
+  .hist-card {
+    min-width: calc(50% - 8px);
+    padding: 12px 8px;
+  }
+  .hist-card .hist-card-valor {
+    font-size: 1.1rem;
+  }
+  #historial-section,
+  #estadisticas-section,
+  #form-section,
+  #list-section,
+  #receta-form-section,
+  #receta-list-section,
+  #produccion-form-section,
+  #clientes-section,
+  #ventas-section,
+  #ventas-list-section {
+    padding: 16px 12px;
+  }
+  main {
+    padding: 12px 8px;
+  }
+  .table-container {
+    margin: 0 -8px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  .filtros-bar {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .filtro-ordenar {
+    width: 100%;
+  }
+  .filtro-ordenar select {
+    width: 100%;
+  }
+  .form-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .form-buttons .btn-primary,
+  .form-buttons .btn-secondary {
+    padding: 14px 20px;
+    min-height: 48px;
+    font-size: 1rem;
+  }
+  .btn-agregar-ingr {
+    width: 100%;
+    justify-content: center;
+    padding: 14px;
+    min-height: 48px;
+  }
+  .receta-ingr-row {
+    padding: 10px;
+    gap: 8px;
+  }
+  .receta-ingr-row .form-group {
+    min-width: calc(50% - 12px);
+  }
+  .receta-ingr-row .form-group:first-child {
+    min-width: 100%;
+  }
+  .receta-ingr-costo {
+    min-width: auto;
+    font-size: 0.9rem;
+  }
+  .btn-quitar-ingr {
+    width: 38px;
+    height: 38px;
+  }
+  .venta-item-row {
+    padding: 10px;
+    gap: 8px;
+  }
+  .venta-item-row .form-group {
+    min-width: calc(50% - 12px);
+  }
+  .venta-item-row .form-group:first-child {
+    min-width: 100%;
+  }
+  .venta-item-subtotal {
+    min-width: auto;
+    font-size: 0.9rem;
+  }
+  .btn-quitar-item-venta {
+    width: 38px;
+    height: 38px;
+  }
+  .prod-ingr-row {
+    padding: 8px 8px;
+    gap: 4px;
+  }
+  .prod-ingr-nombre {
+    min-width: 100%;
+    margin-bottom: 2px;
+  }
+  .prod-ingr-base {
+    font-size: 0.75rem;
+  }
+  .prod-ingr-escala {
+    font-size: 0.85rem;
+  }
+  .prod-ingr-costo {
+    font-size: 0.85rem;
+  }
+  .produccion-resumen {
+    padding: 14px;
+  }
+  .prod-res-row {
+    font-size: 0.9rem;
+  }
+  .prod-res-total strong {
+    font-size: 1.1rem;
+  }
+  .prod-res-ganancia strong {
+    font-size: 1.2rem;
+  }
+  .login-box {
+    padding: 28px 16px;
+  }
+  .login-box h1 {
+    font-size: 1.3rem;
+  }
+  #pin-input {
+    font-size: 1.5rem;
+    padding: 14px;
+    letter-spacing: 8px;
+  }
+  .receta-card-header {
+    padding: 14px 16px;
+  }
+  .receta-card-body {
+    padding: 14px 16px;
+  }
+  .est-card .hist-card-valor {
+    font-size: 1.3rem;
+  }
+  .historial-btn {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    flex: none;
+  }
+  .historial-filtros {
+    gap: 4px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .est-bh-izq {
+    min-width: 70px;
+  }
+  .est-bh-nombre {
+    font-size: 0.8rem;
+  }
+  .est-bh-detalle {
+    font-size: 0.65rem;
+  }
+  .est-bh-pista {
+    height: 24px;
+  }
+  .est-bh-monto {
+    font-size: 0.7rem;
+    padding: 0 6px;
   }
 }
 

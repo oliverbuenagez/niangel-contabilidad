@@ -369,6 +369,16 @@ function configurarEventos() {
   document.getElementById("produccion-unidad").addEventListener("change", function() { calcularProduccion(); });
   document.getElementById("produccion-costo-adicional").addEventListener("input", function() { calcularProduccion(); });
   document.getElementById("produccion-costo-adicional").addEventListener("change", function() { calcularProduccion(); });
+
+  function setearFechaProduccionHoy() {
+    var hoy = new Date();
+    var yyyy = hoy.getFullYear();
+    var mm = String(hoy.getMonth() + 1).padStart(2, "0");
+    var dd = String(hoy.getDate()).padStart(2, "0");
+    document.getElementById("produccion-fecha").value = yyyy + "-" + mm + "-" + dd;
+  }
+  setearFechaProduccionHoy();
+
   document.getElementById("produccion-form").addEventListener("submit", function(e) { guardarProduccion(e); });
   document.getElementById("cancelar-editar-produccion-btn").addEventListener("click", function() { cancelarEditarProduccion(); });
 
@@ -844,8 +854,7 @@ function calcularProduccion() {
   const ganancia = sanitizarNumero(ingreso - costoTotal);
   const margen = sanitizarNumero(ingreso > 0 ? (ganancia / ingreso) * 100 : 0);
 
-  document.getElementById("prod-costo-ingredientes").textContent = "$" + totalCosto.toFixed(2);
-  document.getElementById("prod-costo-adicional-label").textContent = "$" + costoAdicionalTotal.toFixed(2);
+  document.getElementById("prod-costo-ingredientes").textContent = "$" + (totalCosto + costoAdicionalReceta).toFixed(2);
   document.getElementById("prod-costo-total").textContent = "$" + costoTotal.toFixed(2);
   document.getElementById("prod-ingreso-panes").textContent = panesProducidos;
   document.getElementById("prod-precio-pan").textContent = receta.precioVenta;
@@ -858,7 +867,10 @@ function calcularProduccion() {
 
 function editarProduccion(id) {
   var prod = produccionesData.find(function(p) { return p.id === id; });
-  if (!prod) return;
+  if (!prod) {
+    mostrarToast("Error: producción no encontrada.", "error");
+    return;
+  }
 
   produccionEditandoId = id;
   document.getElementById("guardar-produccion-btn").textContent = "Actualizar producción";
@@ -879,9 +891,11 @@ function editarProduccion(id) {
     if (prod.costoAdicionalExtra) {
       document.getElementById("produccion-costo-adicional").value = prod.costoAdicionalExtra;
     }
+    document.getElementById("produccion-fecha").value = prod.fecha ? prod.fecha.split("T")[0] : "";
     cargarRecetaProduccion();
     calcularProduccion();
-  }, 100);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, 150);
 }
 
 function cancelarEditarProduccion() {
@@ -893,6 +907,7 @@ function cancelarEditarProduccion() {
   document.getElementById("produccion-ingredientes-container").innerHTML = '<p class="empty-prod-msg">Selecciona una receta para ver los ingredientes</p>';
   document.getElementById("produccion-info").classList.add("hidden");
   document.getElementById("produccion-resumen").classList.add("hidden");
+  setearFechaProduccionHoy();
 }
 
 function guardarProduccion(evento) {
@@ -950,14 +965,15 @@ function guardarProduccion(evento) {
     return;
   }
 
-  const ahora = new Date().toISOString();
+  var fechaRaw = document.getElementById("produccion-fecha").value;
+  var fecha = fechaRaw ? new Date(fechaRaw + "T12:00:00").toISOString() : new Date().toISOString();
 
   if (produccionEditandoId) {
     // Actualizar producción existente
     produccionRef.doc(produccionEditandoId).update({
       recetaId: receta.id,
       recetaNombre: receta.nombre,
-      fecha: ahora,
+      fecha: fecha,
       cantidadProducida: cantidad,
       unidadProduccion: unidad,
       multiplicador: multiplicador,
@@ -973,16 +989,16 @@ function guardarProduccion(evento) {
       ingreso: ingreso,
       ganancia: ganancia,
       margen: margen
+    }).then(function() {
+      mostrarToast("Producción actualizada: " + panesProducidos + " panes · Ganancia: $" + ganancia.toFixed(2), "success");
+      cancelarEditarProduccion();
     }).catch(function(error) { mostrarError("Error al actualizar producción: " + error.message); });
-
-    mostrarToast("Producción actualizada: " + panesProducidos + " panes · Ganancia: $" + ganancia.toFixed(2), "success");
-    cancelarEditarProduccion();
   } else {
     // Nueva producción
     produccionRef.add({
       recetaId: receta.id,
       recetaNombre: receta.nombre,
-      fecha: ahora,
+      fecha: fecha,
       cantidadProducida: cantidad,
       unidadProduccion: unidad,
       multiplicador: multiplicador,
@@ -998,16 +1014,15 @@ function guardarProduccion(evento) {
       ingreso: ingreso,
       ganancia: ganancia,
       margen: margen
+    }).then(function() {
+      // Limpiar formulario
+      document.getElementById("produccion-form").reset();
+      document.getElementById("produccion-receta-select").value = "";
+      document.getElementById("produccion-ingredientes-container").innerHTML = '<p class="empty-prod-msg">Selecciona una receta para ver los ingredientes</p>';
+      document.getElementById("produccion-info").classList.add("hidden");
+      document.getElementById("produccion-resumen").classList.add("hidden");
+      mostrarToast("Producción guardada: " + panesProducidos + " panes · Ganancia: $" + ganancia.toFixed(2), "success");
     }).catch(function(error) { mostrarError("Error al guardar producción: " + error.message); });
-
-    // Limpiar formulario
-    document.getElementById("produccion-form").reset();
-    document.getElementById("produccion-receta-select").value = "";
-    document.getElementById("produccion-ingredientes-container").innerHTML = '<p class="empty-prod-msg">Selecciona una receta para ver los ingredientes</p>';
-    document.getElementById("produccion-info").classList.add("hidden");
-    document.getElementById("produccion-resumen").classList.add("hidden");
-
-    mostrarToast("Producción guardada: " + panesProducidos + " panes · Ganancia: $" + ganancia.toFixed(2), "success");
   }
 }
 
@@ -1631,23 +1646,28 @@ function guardarVenta(evento) {
   };
 
   if (ventaEditandoId) {
-    ventasRef.doc(ventaEditandoId).update(data).catch(function(e) {
+    ventasRef.doc(ventaEditandoId).update(data).then(function() {
+      mostrarToast("Venta actualizada: $" + total.toFixed(2), "success");
+      cancelarEditarVenta();
+    }).catch(function(e) {
       mostrarError("Error al actualizar venta: " + e.message);
     });
-    mostrarToast("Venta actualizada: $" + total.toFixed(2), "success");
-    cancelarEditarVenta();
   } else {
-    ventasRef.add(data).catch(function(e) {
+    ventasRef.add(data).then(function() {
+      limpiarFormVenta();
+      mostrarToast("Venta guardada: $" + total.toFixed(2), "success");
+    }).catch(function(e) {
       mostrarError("Error al guardar venta: " + e.message);
     });
-    limpiarFormVenta();
-    mostrarToast("Venta guardada: $" + total.toFixed(2), "success");
   }
 }
 
 function editarVenta(id) {
   var v = ventasData.find(function(x) { return x.id === id; });
-  if (!v) return;
+  if (!v) {
+    mostrarToast("Error: venta no encontrada.", "error");
+    return;
+  }
 
   ventaEditandoId = id;
   document.getElementById("cancelar-editar-venta-btn").classList.remove("hidden");
@@ -1673,6 +1693,7 @@ function editarVenta(id) {
   });
 
   calcularTotalVenta();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function cancelarEditarVenta() {
@@ -1933,12 +1954,11 @@ function renderEstadisticas() {
   document.getElementById("est-prod-resumen").classList.toggle("hidden", !hayProduccion);
   if (hayProduccion) {
     var prodCountTotal = prodFiltradas.length;
-    var prodInversion = 0, prodGastos = 0, prodCostoTotal = 0;
+    var prodInversion = 0, prodCostoTotal = 0;
     var prodIngreso = 0, prodGanancia = 0;
 
     prodFiltradas.forEach(function(p) {
-      prodInversion += p.costoIngredientes || 0;
-      prodGastos += p.costoAdicional || 0;
+      prodInversion += (p.costoIngredientes || 0) + (p.costoAdicional || 0);
       prodCostoTotal += p.costoTotal || 0;
       prodIngreso += p.ingreso || 0;
       prodGanancia += p.ganancia || 0;
@@ -1946,7 +1966,6 @@ function renderEstadisticas() {
 
     document.getElementById("est-prod-count").textContent = prodCountTotal;
     document.getElementById("est-prod-inversion").textContent = "$" + prodInversion.toFixed(0);
-    document.getElementById("est-prod-gastos").textContent = "$" + prodGastos.toFixed(0);
     document.getElementById("est-prod-costo").textContent = "$" + prodCostoTotal.toFixed(0);
     document.getElementById("est-prod-ingreso").textContent = "$" + prodIngreso.toFixed(0);
     var prodGananciaEl = document.getElementById("est-prod-ganancia");
