@@ -2533,3 +2533,257 @@ th.sortable.sort-desc::after {
     padding: 32px 48px;
   }
 }
+
+/* ============================================================
+   BOTTOM NAV — móvil (≤600px)
+   ============================================================ */
+
+@media (max-width: 600px) {
+
+  header {
+    padding: 10px 16px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-left {
+    flex: 1;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  header h1 {
+    font-size: 1rem;
+    text-align: left;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .btn-logout {
+    padding: 8px 12px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    align-self: center;
+    flex-shrink: 0;
+  }
+  .btn-logout:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+  .btn-logout .logout-text {
+    display: none;
+  }
+  .btn-logout .logout-icon {
+    display: inline;
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+
+  header .tabs {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: row;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+    padding: 0;
+    gap: 0;
+    justify-content: space-around;
+    overflow: visible;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  header .tabs .tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    padding: 6px 2px;
+    background: none;
+    border: none;
+    border-top: 2px solid transparent;
+    border-radius: 0;
+    color: #6b7280;
+    font-size: 0.6rem;
+    font-weight: 600;
+    min-height: 50px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+
+  header .tabs .tab .tab-icon {
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+
+  header .tabs .tab .tab-text {
+    font-size: 0.6rem;
+    line-height: 1.1;
+  }
+
+  header .tabs .tab.active {
+    color: #d97706;
+    border-top-color: #d97706;
+    background: rgba(217, 119, 6, 0.06);
+  }
+
+  header .tabs .tab:active {
+    background: rgba(217, 119, 6, 0.1);
+  }
+
+  main {
+    padding-bottom: 66px;
+  }
+
+  .tab-panel.active main {
+    padding-bottom: 66px;
+  }
+
+  #toast-container {
+    bottom: 72px;
+  }
+}
+
+@media (max-width: 480px) {
+
+  header {
+    padding: 8px 12px;
+  }
+
+  header h1 {
+    font-size: 0.9rem;
+  }
+
+  header .tabs .tab {
+    min-height: 44px;
+    padding: 4px 1px;
+    gap: 0;
+  }
+
+  header .tabs .tab .tab-icon {
+    font-size: 1.1rem;
+  }
+
+  header .tabs .tab .tab-text {
+    font-size: 0.55rem;
+  }
+
+  .btn-logout {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 6px 10px;
+  }
+
+  main {
+    padding-bottom: 58px;
+  }
+
+  .tab-panel.active main {
+    padding-bottom: 58px;
+  }
+}
+
+@media (min-width: 601px) {
+
+  header .tabs {
+    position: static;
+    display: flex;
+    flex-direction: row;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    gap: 6px;
+    overflow: visible;
+  }
+
+  header .tabs .tab {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    min-height: auto;
+    cursor: pointer;
+    transition: all 0.25s;
+    font-family: inherit;
+  }
+
+  header .tabs .tab .tab-icon {
+    font-size: 1rem;
+  }
+
+  header .tabs .tab .tab-text {
+    font-size: inherit;
+  }
+
+  header .tabs .tab.active {
+    background: white;
+    color: #b45309;
+    border-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-logout {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: auto;
+    min-width: auto;
+    cursor: pointer;
+  }
+  .btn-logout .logout-text {
+    display: inline;
+  }
+  .btn-logout .logout-icon {
+    display: none;
+  }
+
+  main {
+    padding-bottom: 32px;
+  }
+
+  .tab-panel.active main {
+    padding-bottom: 32px;
+  }
+
+  #toast-container {
+    bottom: 24px;
+  }
+}

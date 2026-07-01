@@ -48,14 +48,32 @@
       <div class="header-left">
         <h1>🥖 Panadería</h1>
         <nav class="tabs">
-          <button class="tab active" data-tab="ingredientes">Ingredientes</button>
-          <button class="tab" data-tab="recetas">Recetas</button>
-          <button class="tab" data-tab="produccion">Producción</button>
-          <button class="tab" data-tab="ventas">Ventas</button>
-          <button class="tab" data-tab="estadisticas">Estadísticas</button>
+          <button class="tab active" data-tab="ingredientes">
+            <span class="tab-icon">🥘</span>
+            <span class="tab-text">Ingredientes</span>
+          </button>
+          <button class="tab" data-tab="recetas">
+            <span class="tab-icon">📋</span>
+            <span class="tab-text">Recetas</span>
+          </button>
+          <button class="tab" data-tab="produccion">
+            <span class="tab-icon">🏭</span>
+            <span class="tab-text">Producción</span>
+          </button>
+          <button class="tab" data-tab="ventas">
+            <span class="tab-icon">💰</span>
+            <span class="tab-text">Ventas</span>
+          </button>
+          <button class="tab" data-tab="estadisticas">
+            <span class="tab-icon">📊</span>
+            <span class="tab-text">Estadísticas</span>
+          </button>
         </nav>
       </div>
-      <button onclick="cerrarSesion()" class="btn-logout">Cerrar sesión</button>
+      <button onclick="cerrarSesion()" class="btn-logout" aria-label="Cerrar sesión">
+        <span class="logout-text">Cerrar sesión</span>
+        <span class="logout-icon">✕</span>
+      </button>
     </header>
 
     <div id="error-bar" class="hidden error-bar">
