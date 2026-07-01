@@ -1144,7 +1144,8 @@ function dibujarGrafica(porReceta) {
   var ctx = canvas.getContext("2d");
   var rect = canvas.parentElement.getBoundingClientRect();
   canvas.width = rect.width - 32;
-  canvas.height = 200;
+  var cssHeight = getComputedStyle(canvas).height;
+  canvas.height = parseInt(cssHeight) || 200;
 
   var nombres = Object.keys(porReceta);
   if (nombres.length === 0) return;
@@ -2091,7 +2092,9 @@ function dibujarGraficaEst(ventas) {
   var container = canvas.parentElement;
   var rect = container.getBoundingClientRect();
   var dpr = window.devicePixelRatio || 1;
-  var w = rect.width - 32, h = 260;
+  var w = rect.width - 32;
+  var cssHeight = getComputedStyle(canvas).height;
+  var h = parseInt(cssHeight) || 260;
   canvas.width = w * dpr;
   canvas.height = h * dpr;
   canvas.style.width = w + "px";
