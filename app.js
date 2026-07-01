@@ -19,6 +19,7 @@ let ventasPeriodo = "month";
 let ventasRef = null;
 let ventasData = [];
 let ventaEditandoId = null;
+let filtroMesGlobal = "";
 
 // ============================================================
 // LOGIN
@@ -301,6 +302,7 @@ function configurarEventos() {
       document.querySelectorAll(".tab-panel").forEach(function(p) { p.classList.remove("active"); });
       tab.classList.add("active");
       document.getElementById("seccion-" + tab.dataset.tab).classList.add("active");
+      sincronizarInputsMes();
       if (tab.dataset.tab === "produccion") {
         llenarSelectReceta();
         actualizarHistorial();
@@ -1096,8 +1098,14 @@ function filtrarProducciones(producciones, periodo) {
       inicio.setHours(0, 0, 0, 0);
       break;
     case "month":
-      inicio.setDate(1);
-      inicio.setHours(0, 0, 0, 0);
+      if (filtroMesGlobal) {
+        var parts = filtroMesGlobal.split('-');
+        inicio = new Date(+parts[0], +parts[1] - 1, 1);
+        ahora = new Date(+parts[0], +parts[1], 0, 23, 59, 59, 999);
+      } else {
+        inicio.setDate(1);
+        inicio.setHours(0, 0, 0, 0);
+      }
       break;
     case "year":
       inicio.setMonth(0, 1);
@@ -1109,7 +1117,13 @@ function filtrarProducciones(producciones, periodo) {
 
   return producciones.filter(function(p) {
     if (!p.fecha) return false;
-    var f = new Date(p.fecha);
+    var f;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(p.fecha)) {
+      var parts = p.fecha.split('-');
+      f = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+    } else {
+      f = new Date(p.fecha);
+    }
     if (isNaN(f.getTime())) return false;
     return f >= inicio && f <= ahora;
   });
@@ -1859,6 +1873,34 @@ document.addEventListener("click", function(e) {
   }
 });
 
+// Input de mes: al cambiar, actualiza filtro global y cambia a periodo "Mes"
+document.addEventListener("change", function(e) {
+  if (!e.target.classList.contains("filtro-mes")) return;
+  filtroMesGlobal = e.target.value;
+  document.querySelectorAll(".filtro-mes").forEach(function(el) {
+    el.value = filtroMesGlobal;
+  });
+  if (!filtroMesGlobal) sincronizarInputsMes();
+  var tab = document.querySelector(".tab-panel.active");
+  if (tab) {
+    var id = tab.id;
+    if (id === "seccion-historial" || id === "seccion-produccion") cambiarPeriodoHistorial("month");
+    else if (id === "seccion-ventas") cambiarPeriodoVentas("month");
+    else if (id === "seccion-estadisticas") cambiarPeriodoEst("month");
+  }
+});
+
+function sincronizarInputsMes() {
+  var valor = filtroMesGlobal || "";
+  if (!valor) {
+    var d = new Date();
+    valor = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  }
+  document.querySelectorAll(".filtro-mes").forEach(function(el) {
+    el.value = valor;
+  });
+}
+
 // ============================================================
 // ESTADÍSTICAS
 // ============================================================
@@ -1955,19 +1997,17 @@ function renderEstadisticas() {
   document.getElementById("est-prod-resumen").classList.toggle("hidden", !hayProduccion);
   if (hayProduccion) {
     var prodCountTotal = prodFiltradas.length;
-    var prodInversion = 0, prodCostoTotal = 0;
+    var prodInversion = 0;
     var prodIngreso = 0, prodGanancia = 0;
 
     prodFiltradas.forEach(function(p) {
       prodInversion += (p.costoIngredientes || 0) + (p.costoAdicional || 0);
-      prodCostoTotal += p.costoTotal || 0;
       prodIngreso += p.ingreso || 0;
       prodGanancia += p.ganancia || 0;
     });
 
     document.getElementById("est-prod-count").textContent = prodCountTotal;
     document.getElementById("est-prod-inversion").textContent = "$" + prodInversion.toFixed(0);
-    document.getElementById("est-prod-costo").textContent = "$" + prodCostoTotal.toFixed(0);
     document.getElementById("est-prod-ingreso").textContent = "$" + prodIngreso.toFixed(0);
     var prodGananciaEl = document.getElementById("est-prod-ganancia");
     prodGananciaEl.textContent = "$" + prodGanancia.toFixed(0);
@@ -2455,3 +2495,5 @@ function mostrarError(mensaje) {
 function cerrarError() {
   document.getElementById("error-bar").classList.add("hidden");
 }
+
+sincronizarInputsMes();

@@ -1400,6 +1400,12 @@ td.unidad-col {
     font-size: 0.8rem;
     flex: none;
   }
+  .filtro-mes {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+    min-height: 38px;
+    max-width: 160px;
+  }
   .historial-filtros {
     gap: 4px;
     overflow-x: auto;
@@ -1709,6 +1715,29 @@ td.unidad-col {
   gap: 8px;
   margin-bottom: 24px;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.filtro-mes {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  font-weight: 600;
+  border: 2px solid #d1d5db;
+  border-radius: 10px;
+  background: #fafafa;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  min-height: 42px;
+  box-sizing: border-box;
+}
+.filtro-mes:focus {
+  outline: none;
+  border-color: #d97706;
+}
+.filtro-mes:hover {
+  border-color: #d97706;
 }
 
 .historial-btn {
@@ -2744,6 +2773,10 @@ th.sortable.sort-desc::after {
 
   header .tabs .tab .tab-text {
     font-size: inherit;
+  }
+
+  header .tabs .tab:hover {
+    background: rgba(255, 255, 255, 0.22);
   }
 
   header .tabs .tab.active {
