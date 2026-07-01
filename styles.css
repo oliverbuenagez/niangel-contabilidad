@@ -1172,32 +1172,51 @@ td.unidad-col {
 }
 
 @media (max-width: 480px) {
+  header {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .header-left {
+    gap: 6px;
+  }
+
+  header h1 {
+    font-size: 1rem;
+    text-align: left;
+  }
+
   .tabs {
     overflow-x: auto;
     flex-wrap: nowrap;
     gap: 4px;
+    justify-content: flex-start;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    padding-bottom: 2px;
   }
   .tabs::-webkit-scrollbar {
     display: none;
   }
   .tab {
     flex: none;
-    font-size: 0.82rem;
-    padding: 10px 10px;
+    font-size: 0.8rem;
+    padding: 8px 10px;
     white-space: nowrap;
-    min-height: 44px;
+    min-height: 40px;
   }
   .tab:first-child {
-    margin-left: auto;
+    margin-left: 0;
   }
   .tab:last-child {
-    margin-right: auto;
+    margin-right: 0;
   }
 
-  header h1 {
-    font-size: 1.05rem;
+  .btn-logout {
+    white-space: nowrap;
+    font-size: 0.8rem;
+    padding: 8px 14px;
+    min-height: 40px;
   }
 
   .resumen-card {
@@ -1205,11 +1224,20 @@ td.unidad-col {
     padding: 14px;
   }
   .hist-card {
-    min-width: calc(50% - 8px);
-    padding: 12px 8px;
+    min-width: 0;
+    padding: 10px 8px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  .hist-card-label {
+    font-size: 0.65rem;
+    margin-bottom: 3px;
   }
   .hist-card .hist-card-valor {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
+  }
+  .est-card .hist-card-valor {
+    font-size: 1.15rem;
   }
   #historial-section,
   #estadisticas-section,
@@ -1841,16 +1869,28 @@ th.sortable.sort-desc::after {
   }
 
   .historial-resumen {
-    gap: 6px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
 
   .hist-card {
-    min-width: calc(33.333% - 4px);
-    padding: 12px 8px;
+    min-width: 0;
+    padding: 14px 10px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .hist-card-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
   }
 
   .hist-card .hist-card-valor {
-    font-size: 1rem;
+    font-size: 1.3rem;
+    font-weight: 800;
   }
 
   .historial-btn {
@@ -2167,6 +2207,12 @@ th.sortable.sort-desc::after {
 
 .est-card .hist-card-valor {
   font-size: 1.7rem;
+}
+
+@media (max-width: 600px) {
+  .est-card .hist-card-valor {
+    font-size: 1.3rem;
+  }
 }
 
 /* ============================================================
