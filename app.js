@@ -148,6 +148,13 @@ function renderTabla() {
     });
   }
 
+  const filtroUnidad = document.getElementById("filtro-unidad");
+  if (filtroUnidad && filtroUnidad.value !== "all") {
+    datos = datos.filter(function(item) {
+      return item.unidad === filtroUnidad.value;
+    });
+  }
+
   const orden = document.getElementById("filtro-orden").value;
   datos.sort(function(a, b) {
     switch (orden) {
@@ -165,6 +172,15 @@ function renderTabla() {
         if (!a.fecha) return 1;
         if (!b.fecha) return -1;
         return b.fecha.localeCompare(a.fecha);
+      case "cantidad-asc": return (a.cantidad || 0) - (b.cantidad || 0);
+      case "cantidad-desc": return (b.cantidad || 0) - (a.cantidad || 0);
+      case "precio-gramo-asc":
+      case "precio-gramo-desc": {
+        var pga = a.unidad === "val" ? a.precio : (a.precio || 0) / (convertirAGramos(a.cantidad, a.unidad) || 1);
+        var pgb = b.unidad === "val" ? b.precio : (b.precio || 0) / (convertirAGramos(b.cantidad, b.unidad) || 1);
+        return orden === "precio-gramo-asc" ? pga - pgb : pgb - pga;
+      }
+      case "unidad": return (a.unidad || "").localeCompare(b.unidad || "");
       default: return 0;
     }
   });
@@ -1456,6 +1472,7 @@ function configurarListenerVentas() {
         clienteId: d.clienteId || "",
         clienteNombre: d.clienteNombre || "",
         fecha: d.fecha || "",
+        fechaCreacion: d.fechaCreacion || "",
         items: d.items || [],
         total: d.total || 0
       });
@@ -1755,6 +1772,43 @@ function renderVentas() {
   });
 
   var filtradas = filtrarProducciones(ventasData, ventasPeriodo);
+
+  // Ordenar segun el selector
+  var orden = document.getElementById("ventas-filtro-orden");
+  if (orden) {
+    orden = orden.value;
+  } else {
+    orden = "fecha-venta-desc";
+  }
+  filtradas.sort(function(a, b) {
+    switch (orden) {
+      case "fecha-venta-desc":
+        if (!a.fecha && !b.fecha) return 0;
+        if (!a.fecha) return 1;
+        if (!b.fecha) return -1;
+        return b.fecha.localeCompare(a.fecha);
+      case "fecha-venta-asc":
+        if (!a.fecha && !b.fecha) return 0;
+        if (!a.fecha) return 1;
+        if (!b.fecha) return -1;
+        return a.fecha.localeCompare(b.fecha);
+      case "fecha-creacion-desc":
+        if (!a.fechaCreacion && !b.fechaCreacion) return 0;
+        if (!a.fechaCreacion) return 1;
+        if (!b.fechaCreacion) return -1;
+        return b.fechaCreacion.localeCompare(a.fechaCreacion);
+      case "fecha-creacion-asc":
+        if (!a.fechaCreacion && !b.fechaCreacion) return 0;
+        if (!a.fechaCreacion) return 1;
+        if (!b.fechaCreacion) return -1;
+        return a.fechaCreacion.localeCompare(b.fechaCreacion);
+      case "total-desc": return (b.total || 0) - (a.total || 0);
+      case "total-asc": return (a.total || 0) - (b.total || 0);
+      case "cliente-asc": return (a.clienteNombre || "").localeCompare(b.clienteNombre || "");
+      case "cliente-desc": return (b.clienteNombre || "").localeCompare(a.clienteNombre || "");
+      default: return 0;
+    }
+  });
 
   if (filtradas.length === 0) {
     tbody.innerHTML = "";

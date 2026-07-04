@@ -143,6 +143,23 @@
               <option value="nombre-desc">Nombre Z-A</option>
               <option value="precio-asc">Precio $ - $$</option>
               <option value="precio-desc" selected>Precio $$ - $</option>
+              <option value="cantidad-asc">Cantidad (menor)</option>
+              <option value="cantidad-desc">Cantidad (mayor)</option>
+              <option value="precio-gramo-asc">$/g (menor)</option>
+              <option value="precio-gramo-desc">$/g (mayor)</option>
+              <option value="unidad">Unidad</option>
+            </select>
+          </div>
+          <div class="filtro-unidad">
+            <label for="filtro-unidad">Filtrar:</label>
+            <select id="filtro-unidad" onchange="aplicarFiltros()">
+              <option value="all">Todas las unidades</option>
+              <option value="g">Gramos (g)</option>
+              <option value="lb">Libras (lb)</option>
+              <option value="kg">Kilogramos (kg)</option>
+              <option value="cc">CC</option>
+              <option value="u">Unidades (u)</option>
+              <option value="val">Val/bolsa</option>
             </select>
           </div>
         </div>
@@ -468,6 +485,22 @@
           <button class="historial-btn ventas-periodo" data-periodo="year">Año</button>
           <button class="historial-btn ventas-periodo" data-periodo="all">Todo</button>
           <input type="month" class="filtro-mes" title="Seleccionar mes específico">
+        </div>
+
+        <div class="filtros-bar">
+          <div class="filtro-ordenar">
+            <label for="ventas-filtro-orden">Ordenar:</label>
+            <select id="ventas-filtro-orden" onchange="renderVentas()">
+              <option value="fecha-venta-desc">Fecha venta (reciente)</option>
+              <option value="fecha-venta-asc">Fecha venta (antiguo)</option>
+              <option value="fecha-creacion-desc">Fecha registro (reciente)</option>
+              <option value="fecha-creacion-asc">Fecha registro (antiguo)</option>
+              <option value="total-desc">Mayor venta</option>
+              <option value="total-asc">Menor venta</option>
+              <option value="cliente-asc">Cliente A-Z</option>
+              <option value="cliente-desc">Cliente Z-A</option>
+            </select>
+          </div>
         </div>
 
         <div class="historial-resumen" id="ventas-resumen">
