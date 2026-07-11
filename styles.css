@@ -1059,6 +1059,15 @@ td.unidad-col {
   border-color: #9ca3af;
 }
 
+/* Filtros colapsables - desktop: todo visible, toggle oculto */
+.btn-filtros-toggle {
+  display: none;
+}
+
+.filtros-avanzados {
+  display: contents;
+}
+
 /* =============================================================
    MENSAJE VACÍO
    ============================================================= */
@@ -1149,6 +1158,19 @@ td.unidad-col {
   }
 
   .filtros-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-filtros-toggle {
+    display: flex;
+  }
+
+  .filtros-avanzados {
+    display: none;
+  }
+  .filtros-avanzados.abierto {
+    display: flex;
     flex-direction: column;
     gap: 8px;
   }
@@ -1552,6 +1574,97 @@ td.unidad-col {
   td.acciones .btn-venta-eliminar {
     margin-left: 0;
     width: 100%;
+  }
+
+  /* Ocultar columnas secundarias en tabla clientes */
+  #clientes-tabla thead th:nth-child(2),
+  #clientes-tabla thead th:nth-child(4),
+  #clientes-tabla tbody td:nth-child(2),
+  #clientes-tabla tbody td:nth-child(4) {
+    display: none;
+  }
+
+  /* Truncar columna Productos en tabla ventas */
+  #ventas-tabla td:nth-child(3) {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Ocultar columnas secundarias en tabla historial produccion */
+  #historial-tabla thead th:nth-child(4),
+  #historial-tabla thead th:nth-child(8),
+  #historial-tabla tbody td:nth-child(4),
+  #historial-tabla tbody td:nth-child(8) {
+    display: none;
+  }
+
+  /* Truncar valores en cards de estadisticas */
+  .hist-card-valor {
+    font-size: 1.1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .hist-card-label {
+    font-size: 0.6rem;
+    line-height: 1.2;
+  }
+
+  /* Botones accion sticky en tablas */
+  .table-container table td.acciones {
+    position: sticky;
+    right: 0;
+    background: inherit;
+    z-index: 2;
+    min-width: 80px;
+  }
+
+  /* Filtros colapsables en movil */
+  .filtros-avanzados {
+    display: none;
+  }
+  .filtros-avanzados.abierto {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .btn-filtros-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 10px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-filtros-toggle:active {
+    background: #e5e7eb;
+  }
+
+  /* Filtros rango fechas compactos */
+  .filtro-rango-fechas {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+  .filtro-rango-fechas label {
+    font-size: 0.8rem;
+  }
+  .filtro-rango-fechas input[type="date"] {
+    flex: 1 1 calc(50% - 30px);
+    min-width: 0;
+    font-size: 0.9rem;
+    padding: 10px 12px;
   }
 }
 
@@ -2754,7 +2867,7 @@ th.sortable.sort-desc::after {
     border-top: 2px solid transparent;
     border-radius: 0;
     color: #6b7280;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     font-weight: 600;
     min-height: 50px;
     cursor: pointer;
@@ -2769,14 +2882,14 @@ th.sortable.sort-desc::after {
   }
 
   header .tabs .tab .tab-text {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     line-height: 1.1;
   }
 
   header .tabs .tab.active {
-    color: #d97706;
-    border-top-color: #d97706;
-    background: rgba(217, 119, 6, 0.06);
+    color: #b45309;
+    border-top-color: #b45309;
+    background: rgba(180, 83, 9, 0.06);
   }
 
   header .tabs .tab:active {
@@ -2817,7 +2930,7 @@ th.sortable.sort-desc::after {
   }
 
   header .tabs .tab .tab-text {
-    font-size: 0.55rem;
+    font-size: 0.6rem;
   }
 
   .btn-logout {
@@ -2914,6 +3027,75 @@ th.sortable.sort-desc::after {
 
   .tab-panel.active main {
     padding-bottom: 32px;
+  }
+
+  #toast-container {
+    bottom: 24px;
+  }
+}
+
+/* =============================================================
+   TABLET — Nav en header, touch-friendly (601px – 1024px)
+   ============================================================= */
+
+@media (min-width: 601px) and (max-width: 1024px) {
+
+  header {
+    flex-wrap: wrap;
+    padding: 14px 20px;
+    gap: 10px;
+  }
+
+  .header-left {
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+  }
+
+  header h1 {
+    font-size: 1.15rem;
+    flex-shrink: 0;
+  }
+
+  .tabs {
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  header .tabs .tab {
+    padding: 10px 14px;
+    min-height: 44px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    gap: 5px;
+  }
+
+  header .tabs .tab .tab-icon {
+    font-size: 1.1rem;
+  }
+
+  header .tabs .tab .tab-text {
+    font-size: 0.8rem;
+  }
+
+  .btn-logout {
+    padding: 10px 16px;
+    min-height: 44px;
+    font-size: 0.85rem;
+    margin-left: auto;
+  }
+
+  .btn-logout .logout-text {
+    display: inline;
+  }
+
+  .btn-logout .logout-icon {
+    display: none;
+  }
+
+  main {
+    padding: 24px 20px;
+    max-width: 1000px;
   }
 
   #toast-container {

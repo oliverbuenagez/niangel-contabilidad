@@ -22,6 +22,31 @@ let ventaEditandoId = null;
 let filtroMesGlobal = "";
 
 // ============================================================
+// UTILIDADES
+// ============================================================
+
+function debounce(fn, delay) {
+  var timer;
+  return function() {
+    clearTimeout(timer);
+    timer = setTimeout(fn, delay);
+  };
+}
+
+var renderTablaDebounced = debounce(function() { renderTabla(); }, 200);
+var renderVentasDebounced = debounce(function() { renderVentas(); }, 200);
+
+function toggleFiltros(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle("abierto");
+  var btn = el.previousElementSibling;
+  if (btn && btn.classList.contains("btn-filtros-toggle")) {
+    btn.textContent = el.classList.contains("abierto") ? "🔍 Menos filtros ▲" : "🔍 Más filtros ▼";
+  }
+}
+
+// ============================================================
 // LOGIN
 // ============================================================
 
@@ -1187,15 +1212,19 @@ function dibujarGrafica(porReceta) {
   if (!canvas) return;
   var ctx = canvas.getContext("2d");
   var rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = rect.width - 32;
+  var dpr = window.devicePixelRatio || 1;
+  var w = rect.width - 32;
   var cssHeight = getComputedStyle(canvas).height;
-  canvas.height = parseInt(cssHeight) || 200;
+  var h = parseInt(cssHeight) || 200;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
+  ctx.scale(dpr, dpr);
 
   var nombres = Object.keys(porReceta);
   if (nombres.length === 0) return;
 
-  var w = canvas.width;
-  var h = canvas.height;
   ctx.clearRect(0, 0, w, h);
 
   var ganancias = nombres.map(function(n) { return porReceta[n].ganancia; });
