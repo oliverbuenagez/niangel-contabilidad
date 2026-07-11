@@ -162,6 +162,12 @@
               <option value="val">Val/bolsa</option>
             </select>
           </div>
+          <div class="filtro-rango-fechas">
+            <label>Desde:</label>
+            <input type="date" id="ing-fecha-desde" onchange="aplicarFiltros()">
+            <label>Hasta:</label>
+            <input type="date" id="ing-fecha-hasta" onchange="aplicarFiltros()">
+          </div>
         </div>
         <div class="table-container">
           <table id="ingredientes-tabla">
@@ -488,6 +494,15 @@
         </div>
 
         <div class="filtros-bar">
+          <div class="filtro-buscar">
+            <input type="text" id="ventas-buscar" placeholder="🔍 Buscar cliente o producto..." oninput="renderVentas()" />
+          </div>
+          <div class="filtro-rango-fechas">
+            <label>Desde:</label>
+            <input type="date" id="ventas-fecha-desde" onchange="renderVentas()">
+            <label>Hasta:</label>
+            <input type="date" id="ventas-fecha-hasta" onchange="renderVentas()">
+          </div>
           <div class="filtro-ordenar">
             <label for="ventas-filtro-orden">Ordenar:</label>
             <select id="ventas-filtro-orden" onchange="renderVentas()">

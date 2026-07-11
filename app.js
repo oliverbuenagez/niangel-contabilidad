@@ -155,6 +155,18 @@ function renderTabla() {
     });
   }
 
+  // Filtro por rango de fechas (desde/hasta)
+  var ingDesde = document.getElementById("ing-fecha-desde");
+  var ingHasta = document.getElementById("ing-fecha-hasta");
+  if ((ingDesde && ingDesde.value) || (ingHasta && ingHasta.value)) {
+    datos = datos.filter(function(item) {
+      if (!item.fecha) return false;
+      if (ingDesde && ingDesde.value && item.fecha < ingDesde.value) return false;
+      if (ingHasta && ingHasta.value && item.fecha > ingHasta.value) return false;
+      return true;
+    });
+  }
+
   const orden = document.getElementById("filtro-orden").value;
   datos.sort(function(a, b) {
     switch (orden) {
@@ -188,8 +200,10 @@ function renderTabla() {
   lista.innerHTML = "";
   if (datos.length === 0) {
     emptyMsg.classList.remove("hidden");
-    emptyMsg.textContent = textoBusqueda
-      ? 'No se encontraron ingredientes con "' + textoBusqueda + '"'
+    var tieneFiltros = textoBusqueda || (filtroUnidad && filtroUnidad.value !== "all") ||
+      (ingDesde && ingDesde.value) || (ingHasta && ingHasta.value);
+    emptyMsg.textContent = tieneFiltros
+      ? "No se encontraron ingredientes con los filtros aplicados."
       : "No hay ingredientes. ¡Agrega el primero!";
     actualizarResumen([]);
     return;
@@ -1758,6 +1772,11 @@ function cambiarPeriodoVentas(periodo) {
   document.querySelectorAll(".ventas-periodo").forEach(function(b) {
     b.classList.toggle("active", b.dataset.periodo === periodo);
   });
+  // Limpiar rango de fechas al usar botones de periodo
+  var fd = document.getElementById("ventas-fecha-desde");
+  var fh = document.getElementById("ventas-fecha-hasta");
+  if (fd) fd.value = "";
+  if (fh) fh.value = "";
   renderVentas();
 }
 
@@ -1771,7 +1790,42 @@ function renderVentas() {
     b.classList.toggle("active", b.dataset.periodo === ventasPeriodo);
   });
 
-  var filtradas = filtrarProducciones(ventasData, ventasPeriodo);
+  // Filtro por rango de fechas (desde/hasta) - sobreescribe periodo si hay fechas
+  var fechaDesde = document.getElementById("ventas-fecha-desde");
+  var fechaHasta = document.getElementById("ventas-fecha-hasta");
+  var rangoActivo = (fechaDesde && fechaDesde.value) || (fechaHasta && fechaHasta.value);
+  var filtradas;
+  if (rangoActivo) {
+    // Si hay rango, no usar filtro de periodo
+    filtradas = ventasData.slice();
+    filtradas = filtradas.filter(function(v) {
+      if (!v.fecha) return false;
+      var f = v.fecha;
+      if (fechaDesde && fechaDesde.value && f < fechaDesde.value) return false;
+      if (fechaHasta && fechaHasta.value && f > fechaHasta.value) return false;
+      return true;
+    });
+    // Desactivar visualmente los botones de periodo
+    document.querySelectorAll(".ventas-periodo").forEach(function(b) {
+      b.classList.remove("active");
+    });
+  } else {
+    filtradas = filtrarProducciones(ventasData, ventasPeriodo);
+  }
+
+  // Busqueda por cliente o producto
+  var buscar = document.getElementById("ventas-buscar");
+  var textoBusqueda = buscar ? buscar.value.trim().toLowerCase() : "";
+  if (textoBusqueda) {
+    filtradas = filtradas.filter(function(v) {
+      var cliente = (v.clienteNombre || "").toLowerCase();
+      if (cliente.includes(textoBusqueda)) return true;
+      var productos = (v.items || []).map(function(i) {
+        return (i.recetaNombre || "").toLowerCase();
+      }).join(" ");
+      return productos.includes(textoBusqueda);
+    });
+  }
 
   // Ordenar segun el selector
   var orden = document.getElementById("ventas-filtro-orden");
@@ -1813,7 +1867,13 @@ function renderVentas() {
   if (filtradas.length === 0) {
     tbody.innerHTML = "";
     if (resumen) resumen.classList.add("hidden");
-    if (empty) empty.classList.remove("hidden");
+    if (empty) {
+      empty.classList.remove("hidden");
+      var tieneFiltros = rangoActivo || textoBusqueda;
+      empty.textContent = tieneFiltros
+        ? "No se encontraron ventas con los filtros aplicados."
+        : "No hay ventas registradas.";
+    }
     return;
   }
   if (empty) empty.classList.add("hidden");

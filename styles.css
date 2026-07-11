@@ -1025,6 +1025,40 @@ td.unidad-col {
   border-color: #9ca3af;
 }
 
+.filtro-rango-fechas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.filtro-rango-fechas label {
+  font-size: 0.95rem;
+  color: #374151;
+  font-weight: 600;
+}
+
+.filtro-rango-fechas input[type="date"] {
+  padding: 14px 16px;
+  font-size: 1rem;
+  font-family: inherit;
+  border: 2px solid #d1d5db;
+  border-radius: 10px;
+  outline: none;
+  background-color: #fafafa;
+  cursor: pointer;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.filtro-rango-fechas input[type="date"]:focus {
+  border-color: #d97706;
+  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.1);
+}
+
+.filtro-rango-fechas input[type="date"]:hover {
+  border-color: #9ca3af;
+}
+
 /* =============================================================
    MENSAJE VACÍO
    ============================================================= */
@@ -1133,6 +1167,16 @@ td.unidad-col {
 
   .filtro-unidad select {
     width: 100%;
+  }
+
+  .filtro-rango-fechas {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .filtro-rango-fechas input[type="date"] {
+    flex: 1;
+    min-width: 0;
   }
 
   .resumen-card {
@@ -1341,6 +1385,14 @@ td.unidad-col {
   }
   .filtro-unidad select {
     width: 100%;
+  }
+  .filtro-rango-fechas {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .filtro-rango-fechas input[type="date"] {
+    flex: 1;
+    min-width: 0;
   }
   .form-buttons {
     flex-direction: column;
