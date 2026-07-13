@@ -1023,7 +1023,7 @@ function guardarProduccion(evento) {
   }
 
   var fechaRaw = document.getElementById("produccion-fecha").value;
-  var fecha = fechaRaw ? new Date(fechaRaw + "T12:00:00").toISOString() : new Date().toISOString();
+  var fecha = fechaRaw ? new Date(fechaRaw + "T00:00:00").toISOString() : new Date().toISOString();
 
   if (produccionEditandoId) {
     // Actualizar producción existente
@@ -1074,6 +1074,7 @@ function guardarProduccion(evento) {
     }).then(function() {
       // Limpiar formulario
       document.getElementById("produccion-form").reset();
+      setearFechaProduccionHoy();
       document.getElementById("produccion-receta-select").value = "";
       document.getElementById("produccion-ingredientes-container").innerHTML = '<p class="empty-prod-msg">Selecciona una receta para ver los ingredientes</p>';
       document.getElementById("produccion-info").classList.add("hidden");
@@ -1147,10 +1148,12 @@ function filtrarProducciones(producciones, periodo) {
   switch (periodo) {
     case "today":
       inicio.setHours(0, 0, 0, 0);
+      ahora.setHours(23, 59, 59, 999);
       break;
     case "week":
       inicio.setDate(ahora.getDate() - 7);
       inicio.setHours(0, 0, 0, 0);
+      ahora.setHours(23, 59, 59, 999);
       break;
     case "month":
       if (filtroMesGlobal) {
@@ -1160,11 +1163,13 @@ function filtrarProducciones(producciones, periodo) {
       } else {
         inicio.setDate(1);
         inicio.setHours(0, 0, 0, 0);
+        ahora.setHours(23, 59, 59, 999);
       }
       break;
     case "year":
       inicio.setMonth(0, 1);
       inicio.setHours(0, 0, 0, 0);
+      ahora.setHours(23, 59, 59, 999);
       break;
     default:
       return producciones;
