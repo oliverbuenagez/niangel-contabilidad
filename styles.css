@@ -17,7 +17,7 @@ html {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background-color: #f5f2ed;
+  background: linear-gradient(180deg, #f5f2ed 0%, #ede8e0 100%);
   color: #111827;
   min-height: 100vh;
   line-height: 1.6;
@@ -190,13 +190,13 @@ body {
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.2s;
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
   letter-spacing: 0.01em;
 }
 
 .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.35);
 }
 
 .btn-primary:active {
@@ -217,7 +217,7 @@ body {
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
@@ -230,13 +230,13 @@ body {
    ============================================================= */
 
 header {
-  background: linear-gradient(145deg, #d97706, #b45309);
+  background: linear-gradient(135deg, #d97706 0%, #b45309 50%, #92400e 100%);
   color: white;
   padding: 16px 28px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 24px rgba(146, 64, 14, 0.25);
   flex-wrap: wrap;
   gap: 10px;
 }
@@ -393,10 +393,10 @@ main {
   padding: 14px 16px;
   font-size: 1.05rem;
   font-family: inherit;
-  border: 2px solid #d1d5db;
-  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
   outline: none;
-  transition: border-color 0.25s, box-shadow 0.25s, background-color 0.25s;
+  transition: all 0.25s ease;
   background-color: #fafafa;
 }
 
@@ -437,10 +437,10 @@ main {
 
 #list-section {
   background: white;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 32px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 #list-section h2 {
@@ -455,7 +455,7 @@ main {
 
 .table-container {
   overflow-x: auto;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid #e5e7eb;
 }
 
@@ -466,13 +466,13 @@ table {
 }
 
 thead th {
-  background: linear-gradient(135deg, #d97706, #c2410c);
+  background: linear-gradient(135deg, #d97706, #b45309);
   color: white;
   font-weight: 700;
   text-align: left;
-  padding: 16px 16px;
+  padding: 14px 16px;
   white-space: nowrap;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -501,7 +501,7 @@ tbody td {
 }
 
 tbody tr {
-  transition: background-color 0.2s;
+  transition: background-color 0.2s ease;
 }
 
 tbody tr:nth-child(even) {
@@ -1241,7 +1241,9 @@ td.unidad-col {
   }
 
   td.acciones .btn-editar,
-  td.acciones .btn-eliminar {
+  td.acciones .btn-eliminar,
+  td.acciones .btn-hist-editar,
+  td.acciones .btn-hist-eliminar {
     padding: 6px 10px;
     font-size: 0.78rem;
     margin-left: 0;
@@ -1600,12 +1602,20 @@ td.unidad-col {
     display: none;
   }
 
-  /* Truncar valores en cards de estadisticas */
+  /* Ocultar columnas secundarias en tabla por receta */
+  #historial-por-receta-tabla thead th:nth-child(5),
+  #historial-por-receta-tabla thead th:nth-child(7),
+  #historial-por-receta-tabla tbody td:nth-child(5),
+  #historial-por-receta-tabla tbody td:nth-child(7) {
+    display: none;
+  }
+
+  /* Valores en cards: permitir wrap en vez de truncar */
   .hist-card-valor {
     font-size: 1.1rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.3;
   }
   .hist-card-label {
     font-size: 0.6rem;
@@ -1907,10 +1917,10 @@ td.unidad-col {
 #historial-section,
 #estadisticas-section {
   background: white;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 32px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 #historial-section h2 {
@@ -1988,16 +1998,17 @@ td.unidad-col {
   flex: 1;
   min-width: 120px;
   background: #faf8f5;
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 18px 16px;
   text-align: center;
-  border: 1px solid #e5e7eb;
-  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .hist-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
 .hist-card-label {
@@ -2014,6 +2025,7 @@ td.unidad-col {
   font-weight: 800;
   color: #111827;
   font-variant-numeric: tabular-nums;
+  transition: color 0.2s ease;
 }
 
 .hist-verde {
@@ -2503,6 +2515,8 @@ th.sortable.sort-desc::after {
 @media (max-width: 600px) {
   .est-card .hist-card-valor {
     font-size: 1.3rem;
+    white-space: normal;
+    word-break: break-word;
   }
 }
 
@@ -2567,6 +2581,7 @@ th.sortable.sort-desc::after {
   min-width: 50px;
   background: #d97706;
   transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
 }
 
 .est-bh-monto {
@@ -2754,13 +2769,13 @@ th.sortable.sort-desc::after {
 /* Card clickeable */
 .est-card {
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  transition: transform 0.2s ease, box-shadow 0.25s ease, border-color 0.2s ease;
   position: relative;
 }
 
 .est-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
   border-color: #d1d5db;
 }
 
@@ -2871,7 +2886,7 @@ th.sortable.sort-desc::after {
     font-weight: 600;
     min-height: 50px;
     cursor: pointer;
-    transition: color 0.2s, border-color 0.2s, background 0.2s;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
     white-space: nowrap;
     font-family: inherit;
   }
@@ -2931,6 +2946,11 @@ th.sortable.sort-desc::after {
 
   header .tabs .tab .tab-text {
     font-size: 0.6rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    display: block;
   }
 
   .btn-logout {

@@ -1364,7 +1364,7 @@ function actualizarHistorial() {
   ];
 
   // Tabla detallada
-  var html = '<div class="table-container"><table><thead><tr>';
+  var html = '<div class="table-container"><table id="historial-tabla"><thead><tr>';
   cols.forEach(function(col) {
     var clases = "sortable";
     if (col.key === historialOrden.col) {
@@ -1410,7 +1410,7 @@ function actualizarHistorial() {
     porReceta[p.recetaNombre].ganancia += p.ganancia;
   });
 
-  var recetaHtml = '<div class="table-container"><table><thead><tr>' +
+  var recetaHtml = '<div class="table-container"><table id="historial-por-receta-tabla"><thead><tr>' +
     '<th>Receta</th><th>Veces</th><th>Panes</th><th>Costo</th><th>Ingreso</th><th>Ganancia</th><th>Margen</th>' +
     '</tr></thead><tbody>';
 
